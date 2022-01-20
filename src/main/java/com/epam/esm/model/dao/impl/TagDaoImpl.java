@@ -3,28 +3,35 @@ package com.epam.esm.model.dao.impl;
 import com.epam.esm.model.dao.TagDao;
 import com.epam.esm.model.entity.Tag;
 import com.epam.esm.model.exception.DaoException;
+import com.epam.esm.model.mapper.TagMapper;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import static com.epam.esm.model.dao.ColumnName.TAGS_ID;
-import static com.epam.esm.model.dao.ColumnName.TAGS_NAME;
-import static com.epam.esm.model.dao.TableName.TAGS;
+import static com.epam.esm.model.dao.ColumnName.*;
+import static com.epam.esm.model.dao.TableName.*;
 
 @Component
 public class TagDaoImpl implements TagDao {
-    private static final String FIND_TAG_BY_ID = "SELECT " + TAGS_ID + "," + TAGS_NAME + " FROM " + TAGS
+    private static final String SELECT_TAG_BY_ID = "SELECT " + TAGS_ID + "," + TAGS_NAME + " FROM " + TAGS
             + " WHERE " + TAGS_ID + "=?;";
+
+    private static final String SELECT_ALL_TAGS = "SELECT " + TAGS_ID + "," + TAGS_NAME + " FROM " + TAGS + ";";
+
+    private static final String SELECT_TAG_BY_NAME = "SELECT " + TAGS_ID + "," + TAGS_NAME + " FROM " + TAGS
+            + " WHERE " + TAGS_NAME + "=?;";
+
+    private static final String SELECT_TAGS_BY_CERTIFICATE_ID = "SELECT " + TAGS_ID + "," + TAGS_NAME
+            + " FROM " + CERTIFICATES
+            + " INNER JOIN " + CERTIFICATE_TAGS + " ON " + CERTIFICATE_TAGS_TAG_ID + "=" + TAGS_ID
+            + " WHERE " + CERTIFICATE_TAGS_CERTIFICATE_ID + "=?;";
 
     private static final String DELETE_TAG_BY_ID = "DELETE FROM " + TAGS + " WHERE " + TAGS_ID + "=?;";
-
-    private static final String FIND_TAG_BY_NAME = "SELECT " + TAGS_ID + "," + TAGS_NAME + " FROM " + TAGS
-            + " WHERE " + TAGS_ID + "=?;";
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -35,7 +42,7 @@ public class TagDaoImpl implements TagDao {
     @Override
     public Tag find(int id) throws DaoException {
         try {
-            return jdbcTemplate.query(FIND_TAG_BY_ID, new BeanPropertyRowMapper<>(Tag.class), id).stream()
+            return jdbcTemplate.query(SELECT_TAG_BY_ID, new TagMapper(), id).stream()
                     .findFirst()
                     .orElse(null);
         } catch (DataAccessException e) {
@@ -71,13 +78,31 @@ public class TagDaoImpl implements TagDao {
     }
 
     @Override
+    public List<Tag> findAll() throws DaoException {
+        try {
+            return jdbcTemplate.query(SELECT_ALL_TAGS, new TagMapper());
+        } catch (DataAccessException e) {
+            throw new DaoException("Can't find all tags", e);
+        }
+    }
+
+    @Override
     public Tag findByName(String name) throws DaoException {
-        try{
-            return jdbcTemplate.query(FIND_TAG_BY_NAME, new BeanPropertyRowMapper<>(Tag.class), name).stream()
+        try {
+            return jdbcTemplate.query(SELECT_TAG_BY_NAME, new TagMapper(), name).stream()
                     .findFirst()
                     .orElse(null);
-        }catch (DataAccessException e){
+        } catch (DataAccessException e) {
             throw new DaoException("Can't find tag by name", e);
+        }
+    }
+
+    @Override
+    public List<Tag> findByCertificateId(int id) throws DaoException {
+        try{
+            return jdbcTemplate.query(SELECT_TAGS_BY_CERTIFICATE_ID, new TagMapper(), id);
+        }catch (DataAccessException e){
+            throw new DaoException("Can't find tag by certificate id", e);
         }
     }
 }

@@ -9,12 +9,14 @@ import com.epam.esm.service.CertificateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
 public class CertificateServiceImpl implements CertificateService {
-    private CertificateDao certificateDao;
-    private TagDao tagDao;
+    private final CertificateDao certificateDao;
+    private final TagDao tagDao;
 
     @Autowired
     public CertificateServiceImpl(CertificateDao certificateDao, TagDao tagDao) {
@@ -25,6 +27,9 @@ public class CertificateServiceImpl implements CertificateService {
     @Override
     public Optional<Certificate> save(Certificate certificate) throws ServiceException {
         try {
+            LocalDateTime now = LocalDateTime.now();
+            certificate.setLastUpdateDate(now);
+            certificate.setCreateDate(now);
             Certificate savedCertificate = certificateDao.save(certificate);
             return Optional.ofNullable(savedCertificate);
         } catch (DaoException e) {
@@ -39,6 +44,24 @@ public class CertificateServiceImpl implements CertificateService {
             return Optional.ofNullable(certificate);
         } catch (DaoException e) {
             throw new ServiceException("Can't find certificate by id", e);
+        }
+    }
+
+    @Override
+    public List<Certificate> findAll() throws ServiceException {
+        try{
+            return certificateDao.findAll();
+        }catch (DaoException e){
+            throw new ServiceException("Can't find certificates");
+        }
+    }
+
+    @Override
+    public int update(Certificate certificate) throws ServiceException {
+        try{
+            return certificateDao.update(certificate);
+        }catch (DaoException e){
+            throw new ServiceException("Can't update certificate");
         }
     }
 }
