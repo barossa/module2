@@ -12,4 +12,8 @@ public class Tag {
     private int id;
     private String name;
     private Set<Certificate> certificates = Collections.emptySet();
+
+    public Tag(String name){
+        this.name = name;
+    }
 }

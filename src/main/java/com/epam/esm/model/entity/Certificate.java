@@ -15,7 +15,7 @@ public class Certificate {
     private String name;
     private String description;
     private BigDecimal price;
-    private long duration;
+    private Long duration;
     private LocalDateTime createDate;
     private LocalDateTime lastUpdateDate;
     private Set<Tag> tags = Collections.emptySet();

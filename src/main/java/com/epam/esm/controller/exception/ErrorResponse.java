@@ -1,4 +1,4 @@
-package com.epam.esm.controller.error;
+package com.epam.esm.controller.exception;
 
 import lombok.*;
 
@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PACKAGE)
 @Getter
 @Setter
-public class ErrorResponse {
+class ErrorResponse {
     private LocalDateTime timestamp;
     private int errorCode;
     private String message;

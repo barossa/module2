@@ -4,6 +4,7 @@ import static com.epam.esm.model.dao.TableName.*;
 
 public final class ColumnName {
     private static final String DOT = ".";
+    private static final int INDEX_DIFF = 1;
 
     public static final String CERTIFICATES_ID = CERTIFICATES + DOT + "certificate_id";
     public static final String CERTIFICATES_NAME = CERTIFICATES + DOT + "name";
@@ -19,4 +20,9 @@ public final class ColumnName {
     public static final String CERTIFICATE_TAGS_ID = CERTIFICATE_TAGS + DOT + "record_id";
     public static final String CERTIFICATE_TAGS_TAG_ID = CERTIFICATE_TAGS + DOT + "tag_id";
     public static final String CERTIFICATE_TAGS_CERTIFICATE_ID = CERTIFICATE_TAGS + DOT + "certificate_id";
+
+    public static String getColumnName(String columnWithTable) {
+        int dotIndex = columnWithTable.indexOf(DOT);
+        return columnWithTable.substring(dotIndex + INDEX_DIFF);
+    }
 }

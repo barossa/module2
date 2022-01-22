@@ -9,7 +9,7 @@ public interface BaseDao<T> {
 
     T save(T t) throws DaoException;
 
-    int delete(T t) throws DaoException;
+    int delete(int id) throws DaoException;
 
     List<T> findAll() throws DaoException;
 }

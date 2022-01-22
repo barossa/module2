@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.servlet.LocaleResolver;
-import org.springframework.web.servlet.i18n.CookieLocaleResolver;
+import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 
 import javax.sql.DataSource;
 import java.util.Locale;
@@ -24,7 +24,7 @@ public class AppConfiguration {
     }
 
     @Bean
-    public MessageSource messageSource(){
+    public MessageSource messageSource() {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
         messageSource.setBasenames(MESSAGES_BUNDLE_NAME);
         messageSource.setDefaultEncoding(MESSAGES_ENCODING);
@@ -33,24 +33,8 @@ public class AppConfiguration {
 
     @Bean
     public LocaleResolver localeResolver() {
-        CookieLocaleResolver localeResolver = new CookieLocaleResolver();
-        localeResolver.setDefaultLocale(Locale.US);
-        return localeResolver;
+        AcceptHeaderLocaleResolver acceptHeaderLocaleResolver = new AcceptHeaderLocaleResolver();
+        acceptHeaderLocaleResolver.setDefaultLocale(Locale.US);
+        return acceptHeaderLocaleResolver;
     }
-
-    /*@Bean
-    public ContentNegotiationManager contentNegotiationManager(){
-        ContentNegotiationManagerFactoryBean managerFactoryBean = new ContentNegotiationManagerFactoryBean();
-        managerFactoryBean.setDefaultContentType(MediaType.APPLICATION_JSON);
-        return managerFactoryBean.build();
-    }
-
-    @Bean
-    public ViewResolver viewResolver(ContentNegotiationManager contentNegotiationManager) {
-        ContentNegotiatingViewResolver viewResolver = new ContentNegotiatingViewResolver();
-        viewResolver.setContentNegotiationManager(contentNegotiationManager);
-        viewResolver.se
-        return viewResolver;
-    }*/
-
 }

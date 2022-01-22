@@ -1,14 +1,13 @@
 package com.epam.esm.service;
 
-import com.epam.esm.model.exception.ServiceException;
-
 import java.util.List;
-import java.util.Optional;
 
 public interface BaseService<T> {
-    Optional<T> find(int id) throws ServiceException;
+    T find(int id);
 
-    List<T> findAll() throws ServiceException;
+    List<T> findAll();
 
-    Optional<T> save(T t) throws ServiceException;
+    T save(T t);
+
+    int delete(int id);
 }

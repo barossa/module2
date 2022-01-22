@@ -1,4 +1,4 @@
-package com.epam.esm.controller.error;
+package com.epam.esm.controller.exception;
 
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -9,20 +9,15 @@ import java.util.Locale;
 
 @Component
 public class ErrorResponseBuilder {
-    public static final int OBJECT_NOT_FOUND = 40401;
-    public static final int INTERNAL_ERROR = 50001;
-    public static final int OBJECT_POSTING_ERROR = 50002;
-    public static final int OBJECT_ALREADY_EXISTS = 40901;
-
     private final MessageSource messageSource;
 
     public ErrorResponseBuilder(MessageSource messageSource) {
         this.messageSource = messageSource;
     }
 
-    public ErrorResponse build(int errorCode) {
+    public ErrorResponse build(ErrorCode error) {
         Locale locale = LocaleContextHolder.getLocale();
-        String message = messageSource.getMessage(String.valueOf(errorCode), new Object[]{}, locale);
-        return new ErrorResponse(LocalDateTime.now(), errorCode, message);
+        String message = messageSource.getMessage(error.toString(), new Object[]{}, locale);
+        return new ErrorResponse(LocalDateTime.now(), error.getErrorCode(), message);
     }
 }
