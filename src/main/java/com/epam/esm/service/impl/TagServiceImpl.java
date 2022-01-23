@@ -1,9 +1,6 @@
 package com.epam.esm.service.impl;
 
-import com.epam.esm.controller.exception.extend.DataAccessException;
-import com.epam.esm.controller.exception.extend.ObjectAlreadyExistsException;
-import com.epam.esm.controller.exception.extend.ObjectNotFoundException;
-import com.epam.esm.controller.exception.extend.ObjectPostingException;
+import com.epam.esm.controller.exception.extend.*;
 import com.epam.esm.model.dao.CertificateDao;
 import com.epam.esm.model.dao.TagDao;
 import com.epam.esm.model.entity.Certificate;
@@ -11,8 +8,10 @@ import com.epam.esm.model.entity.Tag;
 import com.epam.esm.model.exception.DaoException;
 import com.epam.esm.model.exception.ServiceException;
 import com.epam.esm.service.TagService;
+import com.epam.esm.service.validator.TagValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -24,10 +23,13 @@ public class TagServiceImpl implements TagService {
 
     private final TagDao tagDao;
     private final CertificateDao certificateDao;
+    private final TagValidator tagValidator;
 
-    public TagServiceImpl(TagDao tagDao, CertificateDao certificateDao) {
+    @Autowired
+    public TagServiceImpl(TagDao tagDao, CertificateDao certificateDao, TagValidator tagValidator) {
         this.tagDao = tagDao;
         this.certificateDao = certificateDao;
+        this.tagValidator = tagValidator;
     }
 
     @Override
@@ -60,6 +62,7 @@ public class TagServiceImpl implements TagService {
     @Override
     public Tag save(Tag tag) throws ServiceException {
         try {
+            validateTag(tag);
             Tag tagByName = tagDao.findByName(tag.getName());
             if (tagByName != null) {
                 throw new ObjectAlreadyExistsException();
@@ -85,6 +88,13 @@ public class TagServiceImpl implements TagService {
         } catch (DaoException e) {
             logger.error("Can't delete tag", e);
             throw new DataAccessException(e);
+        }
+    }
+
+    private void validateTag(Tag tag) {
+        List<String> errors = tagValidator.validateName(tag.getName());
+        if (!errors.isEmpty()) {
+            throw new ObjectValidationException(errors);
         }
     }
 }

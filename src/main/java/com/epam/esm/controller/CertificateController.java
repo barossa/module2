@@ -27,7 +27,7 @@ public class CertificateController {
         return ResponseEntity.ok(certificates);
     }
 
-    @GetMapping(value = "/{id}")
+    @GetMapping(value = "/{id:^[0-9]+$}")
     public ResponseEntity<Object> getCertificate(@PathVariable int id) {
         Certificate certificate = certificateService.find(id);
         return ResponseEntity.ok(certificate);
@@ -43,7 +43,7 @@ public class CertificateController {
         return ResponseEntity.ok().body(savedCertificate);
     }
 
-    @PatchMapping(value = "/{id}")
+    @PatchMapping(value = "/{id:^[0-9]+$}")
     public ResponseEntity<Object> modifyCertificate(Certificate certificate, @RequestParam(required = false, name = "tag") Set<Tag> tags) {
         certificate.setTags(tags);
         certificateService.update(certificate);
@@ -51,7 +51,7 @@ public class CertificateController {
         return ResponseEntity.ok().body(updatedCertificate);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:^[0-9]+$}")
     public ResponseEntity<Object> deleteCertificate(@PathVariable int id) {
         certificateService.delete(id);
         return ResponseEntity.ok(null);

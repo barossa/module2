@@ -22,7 +22,7 @@ public class TagController {
         return ResponseEntity.ok(tags);
     }
 
-    @GetMapping(value = "/{id}")
+    @GetMapping(value = "/{id:^[0-9]+$}")
     public ResponseEntity<Object> getTag(@PathVariable int id) {
         Tag tag = tagService.find(id);
         return ResponseEntity.ok(tag);
@@ -34,7 +34,7 @@ public class TagController {
         return ResponseEntity.ok(savedTag);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:^[0-9]+$}")
     public ResponseEntity<Object> deleteTag(@PathVariable int id) {
         tagService.delete(id);
         return ResponseEntity.ok(null);

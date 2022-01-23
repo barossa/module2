@@ -18,6 +18,6 @@ public class ErrorResponseBuilder {
     public ErrorResponse build(ErrorCode error) {
         Locale locale = LocaleContextHolder.getLocale();
         String message = messageSource.getMessage(error.toString(), new Object[]{}, locale);
-        return new ErrorResponse(LocalDateTime.now(), error.getErrorCode(), message);
+        return new ErrorResponse(LocalDateTime.now(), error.getErrorCode(), message, null);
     }
 }

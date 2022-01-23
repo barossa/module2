@@ -1,5 +1,7 @@
 package com.epam.esm.config;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -17,6 +19,10 @@ import java.util.Locale;
 public class AppConfiguration {
     private static final String MESSAGES_BUNDLE_NAME = "lang/messages";
     private static final String MESSAGES_ENCODING = "UTF-8";
+
+    public AppConfiguration(ObjectMapper objectMapper) {
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    }
 
     @Bean
     public JdbcTemplate jdbcTemplate(DataSource dataSource) {

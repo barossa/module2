@@ -1,9 +1,6 @@
 package com.epam.esm.service.impl;
 
-import com.epam.esm.controller.exception.extend.DataAccessException;
-import com.epam.esm.controller.exception.extend.ObjectNotFoundException;
-import com.epam.esm.controller.exception.extend.ObjectNotPresentedForUpdateException;
-import com.epam.esm.controller.exception.extend.ObjectPostingException;
+import com.epam.esm.controller.exception.extend.*;
 import com.epam.esm.model.EntityUtils;
 import com.epam.esm.model.dao.CertificateDao;
 import com.epam.esm.model.dao.TagDao;
@@ -11,6 +8,7 @@ import com.epam.esm.model.entity.Certificate;
 import com.epam.esm.model.entity.Tag;
 import com.epam.esm.model.exception.DaoException;
 import com.epam.esm.service.CertificateService;
+import com.epam.esm.service.validator.CertificateValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,17 +25,20 @@ public class CertificateServiceImpl implements CertificateService {
 
     private final CertificateDao certificateDao;
     private final TagDao tagDao;
+    private final CertificateValidator certificateValidator;
 
     @Autowired
-    public CertificateServiceImpl(CertificateDao certificateDao, TagDao tagDao) {
+    public CertificateServiceImpl(CertificateDao certificateDao, TagDao tagDao, CertificateValidator certificateValidator) {
         this.certificateDao = certificateDao;
         this.tagDao = tagDao;
+        this.certificateValidator = certificateValidator;
     }
 
     @Override
     @Transactional
     public Certificate save(Certificate certificate) {
         try {
+            validateCertificate(certificate);
             Set<Tag> savedTags = tagDao.saveAll(certificate.getTags());
             certificate.setTags(savedTags);
             Certificate savedCertificate = certificateDao.save(certificate);
@@ -99,6 +100,7 @@ public class CertificateServiceImpl implements CertificateService {
                 throw new ObjectNotPresentedForUpdateException();
             }
             EntityUtils.replaceNullProperties(oldCertificate, certificate);
+            validateCertificate(certificate);
             Set<Tag> savedTags = tagDao.saveAll(certificate.getTags());
             certificate.setTags(savedTags);
 
@@ -106,6 +108,13 @@ public class CertificateServiceImpl implements CertificateService {
         } catch (DaoException e) {
             logger.error("Can't update certificate", e);
             throw new DataAccessException(e);
+        }
+    }
+
+    private void validateCertificate(Certificate certificate) {
+        List<String> errors = certificateValidator.validate(certificate);
+        if (!errors.isEmpty()) {
+            throw new ObjectValidationException(errors);
         }
     }
 }
