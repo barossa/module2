@@ -8,6 +8,7 @@ import java.beans.FeatureDescriptor;
 import java.util.stream.Stream;
 
 public final class EntityUtils {
+    public static final int UNDEFINED_ID = 0;
 
     private EntityUtils() {
     }

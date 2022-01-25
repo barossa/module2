@@ -3,7 +3,7 @@ package com.epam.esm.model.entity;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 @Data
@@ -11,9 +11,9 @@ import java.util.Set;
 public class Tag {
     private int id;
     private String name;
-    private Set<Certificate> certificates = Collections.emptySet();
+    private Set<Certificate> certificates = new HashSet<>();
 
-    public Tag(String name){
+    public Tag(String name) {
         this.name = name;
     }
 }

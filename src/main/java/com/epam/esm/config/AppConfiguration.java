@@ -1,5 +1,7 @@
 package com.epam.esm.config;
 
+import com.epam.esm.controller.exception.ErrorResponseBuilder;
+import com.epam.esm.controller.exception.NotFoundHandler;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.MessageSource;
@@ -8,6 +10,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.web.HttpRequestHandler;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 
@@ -43,4 +46,10 @@ public class AppConfiguration {
         acceptHeaderLocaleResolver.setDefaultLocale(Locale.US);
         return acceptHeaderLocaleResolver;
     }
+
+    @Bean("/*")
+    public HttpRequestHandler notFoundHandler(ErrorResponseBuilder responseBuilder, ObjectMapper objectMapper) {
+        return new NotFoundHandler(responseBuilder, objectMapper);
+    }
+
 }

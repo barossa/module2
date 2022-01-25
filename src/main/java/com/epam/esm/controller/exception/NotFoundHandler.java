@@ -10,14 +10,14 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-public class RestResourceHandler implements HttpRequestHandler {
+public class NotFoundHandler implements HttpRequestHandler {
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
     private static final String JSON_CONTENT_TYPE = "application/json";
 
     private final ErrorResponseBuilder errorResponseBuilder;
     private final ObjectMapper objectMapper;
 
-    public RestResourceHandler(ErrorResponseBuilder errorResponseBuilder, ObjectMapper objectMapper) {
+    public NotFoundHandler(ErrorResponseBuilder errorResponseBuilder, ObjectMapper objectMapper) {
         this.errorResponseBuilder = errorResponseBuilder;
         this.objectMapper = objectMapper;
     }

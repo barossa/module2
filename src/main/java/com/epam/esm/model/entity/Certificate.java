@@ -5,11 +5,11 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
-@Data
 @NoArgsConstructor
+@Data
 public class Certificate {
     private int id;
     private String name;
@@ -18,7 +18,7 @@ public class Certificate {
     private Long duration;
     private LocalDateTime createDate;
     private LocalDateTime lastUpdateDate;
-    private Set<Tag> tags = Collections.emptySet();
+    private Set<Tag> tags = new HashSet<>();
 
     public Certificate(String name, String description, BigDecimal price, long duration) {
         this.name = name;

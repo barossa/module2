@@ -6,7 +6,6 @@ import com.epam.esm.model.dao.TagDao;
 import com.epam.esm.model.entity.Certificate;
 import com.epam.esm.model.entity.Tag;
 import com.epam.esm.model.exception.DaoException;
-import com.epam.esm.model.exception.ServiceException;
 import com.epam.esm.service.TagService;
 import com.epam.esm.service.validator.TagValidator;
 import org.apache.logging.log4j.LogManager;
@@ -33,7 +32,7 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public Tag find(int id) throws ServiceException {
+    public Tag find(int id) {
         try {
             Tag tag = tagDao.find(id);
             if (tag == null) {
@@ -50,7 +49,7 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public List<Tag> findAll() throws ServiceException {
+    public List<Tag> findAll() {
         try {
             return tagDao.findAll();
         } catch (DaoException e) {
@@ -60,7 +59,7 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public Tag save(Tag tag) throws ServiceException {
+    public Tag save(Tag tag) {
         try {
             validateTag(tag);
             Tag tagByName = tagDao.findByName(tag.getName());

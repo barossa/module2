@@ -1,11 +1,16 @@
 package com.epam.esm.model.dao.impl;
 
+import com.epam.esm.model.PropertyCombiner;
 import com.epam.esm.model.dao.TagDao;
+import com.epam.esm.model.entity.Certificate;
 import com.epam.esm.model.entity.Tag;
 import com.epam.esm.model.exception.DaoException;
+import com.epam.esm.model.mapper.CertificateMapper;
 import com.epam.esm.model.mapper.TagMapper;
+import com.epam.esm.model.mapper.TagWithCertificateMapper;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +28,11 @@ public class TagDaoImpl implements TagDao {
     private static final String SELECT_TAG_BY_ID = "SELECT " + TAGS_ID + "," + TAGS_NAME + " FROM " + TAGS
             + " WHERE " + TAGS_ID + "=?;";
 
-    private static final String SELECT_ALL_TAGS = "SELECT " + TAGS_ID + "," + TAGS_NAME + " FROM " + TAGS + ";";
+    private static final String SELECT_ALL_TAGS = "SELECT " + TAGS_ID + "," + TAGS_NAME + "," + CERTIFICATES_ID + "," + CERTIFICATES_NAME + "," + CERTIFICATES_DESCRIPTION + ","
+            + CERTIFICATES_PRICE + "," + CERTIFICATES_DURATION + "," + CERTIFICATES_CREATE_DATE + "," + CERTIFICATES_LAST_UPDATE_DATE
+            + " FROM " + TAGS
+            + " LEFT JOIN " + CERTIFICATE_TAGS + " ON " + CERTIFICATE_TAGS_TAG_ID + "=" + TAGS_ID
+            + " LEFT JOIN " + CERTIFICATES + " ON " + CERTIFICATES_ID + "=" + CERTIFICATE_TAGS_CERTIFICATE_ID + ";";
 
     private static final String SELECT_TAG_BY_NAME_NOT_COMPLETED = "SELECT " + TAGS_ID + "," + TAGS_NAME + " FROM " + TAGS
             + " WHERE";
@@ -41,9 +50,11 @@ public class TagDaoImpl implements TagDao {
     private static final String SQL_QUOTE = "'";
 
     private final JdbcTemplate jdbcTemplate;
+    private final PropertyCombiner<Tag> tagPropertyCombiner;
 
-    public TagDaoImpl(JdbcTemplate jdbcTemplate) {
+    public TagDaoImpl(JdbcTemplate jdbcTemplate, PropertyCombiner<Tag> tagPropertyCombiner) {
         this.jdbcTemplate = jdbcTemplate;
+        this.tagPropertyCombiner = tagPropertyCombiner;
     }
 
     @Override
@@ -87,7 +98,10 @@ public class TagDaoImpl implements TagDao {
     @Override
     public List<Tag> findAll() throws DaoException {
         try {
-            return jdbcTemplate.query(SELECT_ALL_TAGS, new TagMapper());
+            RowMapper<Tag> tagMapper = new TagMapper();
+            RowMapper<Certificate> certificateMapper = new CertificateMapper();
+            List<Tag> tagRows = jdbcTemplate.query(SELECT_ALL_TAGS, new TagWithCertificateMapper(tagMapper, certificateMapper));
+            return tagPropertyCombiner.combine(tagRows);
         } catch (DataAccessException e) {
             throw new DaoException("Can't find all tags", e);
         }
@@ -105,9 +119,10 @@ public class TagDaoImpl implements TagDao {
     }
 
     @Override
-    public List<Tag> findByCertificateId(int id) throws DaoException {
+    public Set<Tag> findByCertificateId(int id) throws DaoException {
         try {
-            return jdbcTemplate.query(SELECT_TAGS_BY_CERTIFICATE_ID, new TagMapper(), id);
+            List<Tag> tags = jdbcTemplate.query(SELECT_TAGS_BY_CERTIFICATE_ID, new TagMapper(), id);
+            return new HashSet<>(tags);
         } catch (DataAccessException e) {
             throw new DaoException("Can't find tag by certificate id", e);
         }
@@ -131,6 +146,10 @@ public class TagDaoImpl implements TagDao {
 
     private List<Tag> findTagsByName(List<String> names) throws DaoException {
         try {
+            if (names.isEmpty()) {
+                return new ArrayList<>();
+            }
+
             return jdbcTemplate.query(buildSelectByNamesQuery(names), new TagMapper());
         } catch (DataAccessException e) {
             throw new DaoException("Can't find tags by name", e);
