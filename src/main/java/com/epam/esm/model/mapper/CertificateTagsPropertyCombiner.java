@@ -2,6 +2,7 @@ package com.epam.esm.model.mapper;
 
 import com.epam.esm.model.PropertyCombiner;
 import com.epam.esm.model.entity.Certificate;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -15,16 +16,17 @@ import static java.util.stream.Collectors.reducing;
 public class CertificateTagsPropertyCombiner implements PropertyCombiner<Certificate> {
     @Override
     public List<Certificate> combine(List<Certificate> certificates) {
-        Optional<Certificate> certificate = certificates.stream().findAny();
-        if(!certificate.isPresent()){
+        Optional<Certificate> certificateOptional = certificates.stream().findAny();
+        if(!certificateOptional.isPresent()){
             return new ArrayList<>();
         }
 
-        Certificate identity = certificate.get();
-        identity.setTags(new HashSet<>());
+        Certificate certificate = certificateOptional.get();
+        Certificate identity = new Certificate();
+        BeanUtils.copyProperties(certificate, identity, "tags");
         BinaryOperator<Certificate> tagCombiner = (a, b) -> {
-            b.getTags().addAll(a.getTags());
-            return b;
+            a.getTags().addAll(b.getTags());
+            return a;
         };
 
         Map<Integer, Optional<Certificate>> combinedCertificates = certificates.stream()

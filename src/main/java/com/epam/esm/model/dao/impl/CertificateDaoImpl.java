@@ -38,8 +38,9 @@ public class CertificateDaoImpl implements CertificateDao {
             + " LEFT JOIN " + TAGS + " ON " + CERTIFICATE_TAGS_TAG_ID + "=" + TAGS_ID + ";";
 
     private static final String SELECT_CERTIFICATES_BY_TAG_ID = "SELECT " + CERTIFICATES_ID + "," + CERTIFICATES_NAME + "," + CERTIFICATES_DESCRIPTION + "," + CERTIFICATES_PRICE + ","
-            + CERTIFICATES_DURATION + "," + CERTIFICATES_CREATE_DATE + "," + CERTIFICATES_LAST_UPDATE_DATE + " FROM " + CERTIFICATES
+            + CERTIFICATES_DURATION + "," + CERTIFICATES_CREATE_DATE + "," + CERTIFICATES_LAST_UPDATE_DATE + "," + TAGS_ID + "," + TAGS_NAME + " FROM " + CERTIFICATES
             + " INNER JOIN " + CERTIFICATE_TAGS + " ON " + CERTIFICATE_TAGS_CERTIFICATE_ID + "=" + CERTIFICATES_ID
+            + " INNER JOIN " + TAGS + " ON " + CERTIFICATE_TAGS_TAG_ID + "=" + TAGS_ID
             + " WHERE " + CERTIFICATE_TAGS_TAG_ID + "=?;";
 
     private static final String UPDATE_CERTIFICATE = "UPDATE " + CERTIFICATES + " SET " + CERTIFICATES_NAME + "=?," + CERTIFICATES_DESCRIPTION + "=?," + CERTIFICATES_PRICE + "=?,"
@@ -146,7 +147,10 @@ public class CertificateDaoImpl implements CertificateDao {
     @Override
     public List<Certificate> findByTagId(int id) throws DaoException {
         try {
-            return jdbcTemplate.query(SELECT_CERTIFICATES_BY_TAG_ID, new CertificateMapper(), id);
+            RowMapper<Certificate> certificateMapper = new CertificateMapper();
+            RowMapper<Tag> tagMapper = new TagMapper();
+            List<Certificate> certificateRows = jdbcTemplate.query(SELECT_CERTIFICATES_BY_TAG_ID, new CertificateWithTagMapper(certificateMapper, tagMapper), id);
+            return propertyCombiner.combine(certificateRows);
         } catch (DataAccessException e) {
             throw new DaoException("Can't find certificates by tag id", e);
         }

@@ -9,12 +9,14 @@ import com.epam.esm.model.entity.Tag;
 import com.epam.esm.model.exception.DaoException;
 import com.epam.esm.service.CertificateService;
 import com.epam.esm.service.validator.CertificateValidator;
+import com.epam.esm.service.validator.TagValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -25,12 +27,15 @@ public class CertificateServiceImpl implements CertificateService {
     private final CertificateDao certificateDao;
     private final TagDao tagDao;
     private final CertificateValidator certificateValidator;
+    private final TagValidator tagValidator;
 
     @Autowired
-    public CertificateServiceImpl(CertificateDao certificateDao, TagDao tagDao, CertificateValidator certificateValidator) {
+    public CertificateServiceImpl(CertificateDao certificateDao, TagDao tagDao,
+                                  CertificateValidator certificateValidator, TagValidator tagValidator) {
         this.certificateDao = certificateDao;
         this.tagDao = tagDao;
         this.certificateValidator = certificateValidator;
+        this.tagValidator = tagValidator;
     }
 
     @Override
@@ -106,6 +111,26 @@ public class CertificateServiceImpl implements CertificateService {
             return certificateDao.update(certificate);
         } catch (DaoException e) {
             logger.error("Can't update certificate", e);
+            throw new DataAccessException(e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public List<Certificate> findByTagName(String name) {
+        try {
+            List<String> errors = tagValidator.validateName(name);
+            if (!errors.isEmpty()) {
+                throw new ObjectValidationException(errors);
+            }
+            Tag tag = tagDao.findByName(name);
+            List<Certificate> certificates = new ArrayList<>();
+            if (tag != null) {
+                certificates = certificateDao.findByTagId(tag.getId());
+            }
+            return certificates;
+        } catch (DaoException e) {
+            logger.error("Can't find certificates by tag name", e);
             throw new DataAccessException(e);
         }
     }
