@@ -17,12 +17,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
 @Service
 public class CertificateServiceImpl implements CertificateService {
     private static final Logger logger = LogManager.getLogger(CertificateServiceImpl.class);
+
+    private static final int MAX_SEARCH_QUERIES = 3;
 
     private final CertificateDao certificateDao;
     private final TagDao tagDao;
@@ -135,10 +138,46 @@ public class CertificateServiceImpl implements CertificateService {
         }
     }
 
+    @Override
+    public List<Certificate> findByPartOfNameOrDescription(String[] searches) {
+        try {
+            if (searches.length > MAX_SEARCH_QUERIES) {
+                throw new LongSearchRequestException();
+            }
+            validateSearches(searches);
+            return certificateDao.findByNameOrDescription(searches);
+        } catch (DaoException e) {
+            logger.error("Can't find certificates by part of name or description", e);
+            throw new DataAccessException(e);
+        }
+    }
+
     private void validateCertificate(Certificate certificate) {
         List<String> errors = certificateValidator.validate(certificate);
         if (!errors.isEmpty()) {
             throw new ObjectValidationException(errors);
+        }
+    }
+
+    private void validateSearches(String[] searches) {
+        if (searches.length == 0) {
+            throw new EmptySearchRequestException();
+        }
+        List<String> nameErrors = Arrays.stream(searches)
+                .map(certificateValidator::validateName)
+                .reduce(new ArrayList<>(), (a, b) -> {
+                    a.addAll(b);
+                    return a;
+                });
+        List<String> descriptionErrors = Arrays.stream(searches)
+                .map(certificateValidator::validateDescription)
+                .reduce(new ArrayList<>(), (a, b) -> {
+                    a.addAll(b);
+                    return a;
+                });
+        if (!nameErrors.isEmpty() && !descriptionErrors.isEmpty()) {
+            nameErrors.addAll(descriptionErrors);
+            throw new ObjectValidationException(nameErrors);
         }
     }
 }

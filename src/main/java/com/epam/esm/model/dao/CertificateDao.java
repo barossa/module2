@@ -9,4 +9,6 @@ public interface CertificateDao extends BaseDao<Certificate> {
     int update(Certificate certificate) throws DaoException;
 
     List<Certificate> findByTagId(int id) throws DaoException;
+
+    List<Certificate> findByNameOrDescription(String[] searches) throws DaoException;
 }

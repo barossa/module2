@@ -1,6 +1,7 @@
 package com.epam.esm.model.dao.impl;
 
 import com.epam.esm.model.PropertyCombiner;
+import com.epam.esm.model.dao.QueryUtils;
 import com.epam.esm.model.dao.TagDao;
 import com.epam.esm.model.entity.Certificate;
 import com.epam.esm.model.entity.Tag;
@@ -44,10 +45,6 @@ public class TagDaoImpl implements TagDao {
             + " WHERE " + CERTIFICATE_TAGS_CERTIFICATE_ID + "=?;";
 
     private static final String DELETE_TAG_BY_ID = "DELETE FROM " + TAGS + " WHERE " + TAGS_ID + "=?;";
-
-    private static final String SQL_OR = "OR";
-    private static final String SQL_EQUALS = "=";
-    private static final String SQL_QUOTE = "'";
 
     private final JdbcTemplate jdbcTemplate;
     private final PropertyCombiner<Tag> tagPropertyCombiner;
@@ -149,25 +146,10 @@ public class TagDaoImpl implements TagDao {
             if (names.isEmpty()) {
                 return new ArrayList<>();
             }
-
-            return jdbcTemplate.query(buildSelectByNamesQuery(names), new TagMapper());
+            String query = QueryUtils.buildSelectByTagNamesQuery(SELECT_TAG_BY_NAME_NOT_COMPLETED, names);
+            return jdbcTemplate.query(query, new TagMapper());
         } catch (DataAccessException e) {
             throw new DaoException("Can't find tags by name", e);
         }
-    }
-
-    private String buildSelectByNamesQuery(List<String> names) {
-        StringBuilder builder = new StringBuilder(SELECT_TAG_BY_NAME_NOT_COMPLETED);
-        ListIterator<String> iterator = names.listIterator();
-        while (iterator.hasNext()) {
-            builder.append(" ")
-                    .append(TAGS_NAME)
-                    .append(SQL_EQUALS)
-                    .append(SQL_QUOTE)
-                    .append(iterator.next())
-                    .append(SQL_QUOTE);
-            builder.append(iterator.hasNext() ? " " + SQL_OR : ";");
-        }
-        return builder.toString();
     }
 }

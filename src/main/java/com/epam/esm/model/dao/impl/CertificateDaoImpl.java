@@ -2,6 +2,7 @@ package com.epam.esm.model.dao.impl;
 
 import com.epam.esm.model.PropertyCombiner;
 import com.epam.esm.model.dao.CertificateDao;
+import com.epam.esm.model.dao.QueryUtils;
 import com.epam.esm.model.dao.TagDao;
 import com.epam.esm.model.entity.Certificate;
 import com.epam.esm.model.entity.Tag;
@@ -42,6 +43,12 @@ public class CertificateDaoImpl implements CertificateDao {
             + " INNER JOIN " + CERTIFICATE_TAGS + " ON " + CERTIFICATE_TAGS_CERTIFICATE_ID + "=" + CERTIFICATES_ID
             + " INNER JOIN " + TAGS + " ON " + CERTIFICATE_TAGS_TAG_ID + "=" + TAGS_ID
             + " WHERE " + CERTIFICATE_TAGS_TAG_ID + "=?;";
+
+    private static final String SELECT_CERTIFICATES_BY_PART_OF_NAME_OR_DESCRIPTION_NOT_COMPLETED = "SELECT " + CERTIFICATES_ID + "," + CERTIFICATES_NAME + "," + CERTIFICATES_DESCRIPTION + "," + CERTIFICATES_PRICE + ","
+            + CERTIFICATES_DURATION + "," + CERTIFICATES_CREATE_DATE + "," + CERTIFICATES_LAST_UPDATE_DATE + "," + TAGS_ID + "," + TAGS_NAME + " FROM " + CERTIFICATES
+            + " LEFT JOIN " + CERTIFICATE_TAGS + " ON " + CERTIFICATE_TAGS_CERTIFICATE_ID + "=" + CERTIFICATES_ID
+            + " LEFT JOIN " + TAGS + " ON " + CERTIFICATE_TAGS_TAG_ID + "=" + TAGS_ID
+            + " WHERE";
 
     private static final String UPDATE_CERTIFICATE = "UPDATE " + CERTIFICATES + " SET " + CERTIFICATES_NAME + "=?," + CERTIFICATES_DESCRIPTION + "=?," + CERTIFICATES_PRICE + "=?,"
             + CERTIFICATES_DURATION + "=?," + CERTIFICATES_CREATE_DATE + "=?," + CERTIFICATES_LAST_UPDATE_DATE + "=?"
@@ -153,6 +160,20 @@ public class CertificateDaoImpl implements CertificateDao {
             return propertyCombiner.combine(certificateRows);
         } catch (DataAccessException e) {
             throw new DaoException("Can't find certificates by tag id", e);
+        }
+    }
+
+    @Override
+    public List<Certificate> findByNameOrDescription(String[] searches) throws DaoException {
+        try {
+            RowMapper<Certificate> certificateMapper = new CertificateMapper();
+            RowMapper<Tag> tagMapper = new TagMapper();
+            String query = QueryUtils.buildSelectByCertNameOrDescQuery(SELECT_CERTIFICATES_BY_PART_OF_NAME_OR_DESCRIPTION_NOT_COMPLETED, searches);
+            List<Certificate> certificateRows = jdbcTemplate.query(query,
+                    new CertificateWithTagMapper(certificateMapper, tagMapper));
+            return propertyCombiner.combine(certificateRows);
+        } catch (DataAccessException e) {
+            throw new DaoException("Can't find certificates by name or description", e);
         }
     }
 

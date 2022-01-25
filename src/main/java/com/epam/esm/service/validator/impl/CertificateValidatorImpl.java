@@ -29,7 +29,7 @@ public class CertificateValidatorImpl implements CertificateValidator {
     private static final long PRICE_MIN = 0L;
     private static final long PRICE_MAX = 1_000_000_000_000L;
 
-    private static final long DURATION_MIN = 0L;
+    private static final long DURATION_MIN = 1L;
     private static final long DURATION_MAX = 365L;
 
     private static final String NAME_MUST_BETWEEN_KEY = "certNameMustBetween";

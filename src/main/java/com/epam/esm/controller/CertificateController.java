@@ -6,7 +6,9 @@ import com.epam.esm.service.CertificateService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -55,9 +57,15 @@ public class CertificateController {
         return ResponseEntity.ok(null);
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<Object> searchByTagName(@RequestParam(defaultValue = "") String tagName){
+    @GetMapping("/byTag")
+    public ResponseEntity<Object> searchByTagName(@RequestParam(defaultValue = "") String tagName) {
         List<Certificate> certificates = certificateService.findByTagName(tagName);
+        return ResponseEntity.ok().body(certificates);
+    }
+
+    @GetMapping("/byPart")
+    public ResponseEntity<Object> searchByPartOfNameOrDescription(@RequestParam(defaultValue = "", name = "query") String[] searches) {
+        List<Certificate> certificates = certificateService.findByPartOfNameOrDescription(searches);
         return ResponseEntity.ok().body(certificates);
     }
 }

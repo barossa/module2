@@ -8,4 +8,6 @@ public interface CertificateService extends BaseService<Certificate> {
     int update(Certificate certificate);
 
     List<Certificate> findByTagName(String name);
+
+    List<Certificate> findByPartOfNameOrDescription(String[] searches);
 }
