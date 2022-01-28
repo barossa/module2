@@ -8,7 +8,7 @@ import java.util.List;
 public interface CertificateDao extends BaseDao<CertificateData> {
     int update(CertificateData certificate) throws DaoException;
 
-    List<CertificateData> findByTagId(int id) throws DaoException;
+    List<CertificateData> findByOptions(List<String> tags, List<String> names, List<String> descriptions, boolean strong) throws DaoException;
 
-    List<CertificateData> findByNameOrDescription(String[] searches) throws DaoException;
+    List<CertificateData> findByTagId(int id) throws DaoException;
 }

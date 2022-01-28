@@ -1,7 +1,5 @@
 package com.epam.esm.model.dao;
 
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -9,12 +7,14 @@ import static com.epam.esm.model.dao.ColumnName.*;
 
 public final class QueryUtils {
     private static final String SQL_OR = "OR";
+    private static final String SQL_AND = "AND";
     private static final String SQL_EQUALS = "=";
     private static final String SQL_QUOTE = "'";
     private static final String SQL_PERCENT = "%";
     private static final String SQL_LIKE = "LIKE";
 
-    private QueryUtils(){}
+    private QueryUtils() {
+    }
 
     public static String buildSelectByTagNamesQuery(String notCompleted, List<String> names) {
         StringBuilder builder = new StringBuilder(notCompleted);
@@ -31,35 +31,28 @@ public final class QueryUtils {
         return builder.toString();
     }
 
-    public static String buildSelectByCertNameOrDescQuery(String notCompleted, String[] searches){
+    public static String buildSelectByOptions(String notCompleted, List<String> tags, List<String> names, List<String> descriptions, boolean strong) {
         StringBuilder builder = new StringBuilder(notCompleted);
-        Iterator<String> iterator = Arrays.stream(searches).iterator();
-        while(iterator.hasNext()){
-            String part = iterator.next();
-            builder.append(" ")
-                    .append(CERTIFICATES_NAME)
-                    .append(" ")
-                    .append(SQL_LIKE)
-                    .append(" ")
-                        .append(SQL_QUOTE)
-                            .append(SQL_PERCENT)
-                            .append(part)
-                            .append(SQL_PERCENT)
-                        .append(SQL_QUOTE)
-                    .append(" ")
-                            .append(SQL_OR)
-                    .append(" ")
-                    .append(CERTIFICATES_DESCRIPTION)
-                    .append(" ")
-                    .append(SQL_LIKE)
-                    .append(" ")
-                        .append(SQL_QUOTE)
-                            .append(SQL_PERCENT)
-                            .append(part)
-                            .append(SQL_PERCENT)
-                        .append(SQL_QUOTE);
-            builder.append(iterator.hasNext() ? " " + SQL_OR : ";");
-        }
+        tags.forEach(tag -> appendCondition(builder, TAGS_NAME, tag, strong));
+        names.forEach(name -> appendCondition(builder, CERTIFICATES_NAME, name, strong));
+        descriptions.forEach(description -> appendCondition(builder, CERTIFICATES_DESCRIPTION, description, strong));
+        int appendix = strong ? SQL_AND.length() : SQL_OR.length();
+        builder.replace(builder.length() - appendix - 1, builder.length(), ";");
         return builder.toString();
+    }
+
+    private static void appendCondition(StringBuilder builder, String column, String condition, boolean strong) {
+        builder.append(" ")
+                .append(column)
+                .append(" ")
+                .append(SQL_LIKE)
+                .append(" ")
+                    .append(SQL_QUOTE)
+                .append(SQL_PERCENT)
+                .append(condition)
+                .append(SQL_PERCENT)
+                    .append(SQL_QUOTE)
+                .append(" ")
+                .append(strong ? SQL_AND : SQL_OR);
     }
 }

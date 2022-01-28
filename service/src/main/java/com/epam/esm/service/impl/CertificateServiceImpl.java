@@ -9,6 +9,7 @@ import com.epam.esm.model.exception.DaoException;
 import com.epam.esm.service.CertificateService;
 import com.epam.esm.service.dto.CertificateDto;
 import com.epam.esm.service.dto.DtoMapper;
+import com.epam.esm.service.dto.Filter;
 import com.epam.esm.service.dto.TagDto;
 import com.epam.esm.service.exception.extend.*;
 import com.epam.esm.service.validator.CertificateValidator;
@@ -20,16 +21,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
 @Service
 public class CertificateServiceImpl implements CertificateService {
     private static final Logger logger = LogManager.getLogger(CertificateServiceImpl.class);
-
-    private static final int MAX_SEARCH_QUERIES = 3;
 
     private final CertificateDao certificateDao;
     private final TagDao tagDao;
@@ -135,38 +135,14 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
-    @Transactional
-    public List<CertificateDto> findByTagName(String name) {
+    public List<CertificateDto> findByFilter(Filter filter) {
         try {
-            List<String> errors = tagValidator.validateName(name);
-            if (!errors.isEmpty()) {
-                throw new ObjectValidationException(errors);
-            }
-            TagData tagData = tagDao.findByName(name);
-            List<CertificateDto> certificates = new ArrayList<>();
-            if (tagData != null) {
-                List<CertificateData> certificatesData = certificateDao.findByTagId(tagData.getId());
-                certificates = DtoMapper.mapCertificatesFromData(certificatesData, Collectors.toList());
-            }
-            return certificates;
-        } catch (DaoException e) {
-            logger.error("Can't find certificates by tag name", e);
-            throw new DataAccessException(e);
-        }
-    }
-
-    @Override
-    public List<CertificateDto> findByPartOfNameOrDescription(String[] searches) {
-        try {
-            if (searches.length > MAX_SEARCH_QUERIES) {
-                throw new LongSearchRequestException();
-            }
-            validateSearches(searches);
-            List<CertificateData> certificatesData = certificateDao.findByNameOrDescription(searches);
+            validateFilter(filter);
+            List<CertificateData> certificatesData = certificateDao.findByOptions(filter.getTags(), filter.getNames(), filter.getDescriptions(), filter.isStrong());
             return DtoMapper.mapCertificatesFromData(certificatesData, Collectors.toList());
 
         } catch (DaoException e) {
-            logger.error("Can't find certificates by part of name or description", e);
+            logger.error("Can't find certificates by queries", e);
             throw new DataAccessException(e);
         }
     }
@@ -178,25 +154,40 @@ public class CertificateServiceImpl implements CertificateService {
         }
     }
 
-    private void validateSearches(String[] searches) {
-        if (searches.length == 0) {
+    private void validateFilter(Filter filter) {
+        BinaryOperator<List<String>> listCombiner = (a, b) -> {
+            b.addAll(a);
+            return b;
+        };
+        initFilter(filter);
+        if(filter.getTags().isEmpty() && filter.getNames().isEmpty() && filter.getDescriptions().isEmpty()){
             throw new EmptySearchRequestException();
         }
-        List<String> nameErrors = Arrays.stream(searches)
+        List<String> tagErrors = filter.getTags().stream()
+                .map(tagValidator::validateName)
+                .reduce(new ArrayList<>(), listCombiner);
+        List<String> nameErrors = filter.getNames().stream()
                 .map(certificateValidator::validateName)
-                .reduce(new ArrayList<>(), (a, b) -> {
-                    a.addAll(b);
-                    return a;
-                });
-        List<String> descriptionErrors = Arrays.stream(searches)
+                .reduce(new ArrayList<>(), listCombiner);
+        List<String> descriptionErrors = filter.getDescriptions().stream()
                 .map(certificateValidator::validateDescription)
-                .reduce(new ArrayList<>(), (a, b) -> {
-                    a.addAll(b);
-                    return a;
-                });
-        if (!nameErrors.isEmpty() && !descriptionErrors.isEmpty()) {
-            nameErrors.addAll(descriptionErrors);
-            throw new ObjectValidationException(nameErrors);
+                .reduce(new ArrayList<>(), listCombiner);
+        tagErrors.addAll(nameErrors);
+        tagErrors.addAll(descriptionErrors);
+        if (!tagErrors.isEmpty()) {
+            throw new ObjectValidationException(tagErrors);
+        }
+    }
+
+    private void initFilter(Filter filter){
+        if(filter.getNames() == null){
+            filter.setNames(Collections.emptyList());
+        }
+        if(filter.getTags() == null){
+            filter.setTags(Collections.emptyList());
+        }
+        if(filter.getDescriptions() == null){
+            filter.setDescriptions(Collections.emptyList());
         }
     }
 }

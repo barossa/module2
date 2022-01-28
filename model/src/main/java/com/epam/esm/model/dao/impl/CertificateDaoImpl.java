@@ -8,6 +8,7 @@ import com.epam.esm.model.dto.CertificateData;
 import com.epam.esm.model.dto.TagData;
 import com.epam.esm.model.exception.DaoException;
 import com.epam.esm.model.mapper.CertificateMapper;
+import com.epam.esm.model.mapper.CertificateTagsPropertyCombiner;
 import com.epam.esm.model.mapper.CertificateWithTagMapper;
 import com.epam.esm.model.mapper.TagMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +45,7 @@ public class CertificateDaoImpl implements CertificateDao {
             + " INNER JOIN " + TAGS + " ON " + CERTIFICATE_TAGS_TAG_ID + "=" + TAGS_ID
             + " WHERE " + CERTIFICATE_TAGS_TAG_ID + "=?;";
 
-    private static final String SELECT_CERTIFICATES_BY_PART_OF_NAME_OR_DESCRIPTION_NOT_COMPLETED = "SELECT " + CERTIFICATES_ID + "," + CERTIFICATES_NAME + "," + CERTIFICATES_DESCRIPTION + "," + CERTIFICATES_PRICE + ","
+    private static final String SELECT_CERTIFICATES_NOT_COMPLETED = "SELECT " + CERTIFICATES_ID + "," + CERTIFICATES_NAME + "," + CERTIFICATES_DESCRIPTION + "," + CERTIFICATES_PRICE + ","
             + CERTIFICATES_DURATION + "," + CERTIFICATES_CREATE_DATE + "," + CERTIFICATES_LAST_UPDATE_DATE + "," + TAGS_ID + "," + TAGS_NAME + " FROM " + CERTIFICATES
             + " LEFT JOIN " + CERTIFICATE_TAGS + " ON " + CERTIFICATE_TAGS_CERTIFICATE_ID + "=" + CERTIFICATES_ID
             + " LEFT JOIN " + TAGS + " ON " + CERTIFICATE_TAGS_TAG_ID + "=" + TAGS_ID
@@ -152,6 +153,22 @@ public class CertificateDaoImpl implements CertificateDao {
     }
 
     @Override
+    public List<CertificateData> findByOptions(List<String> tags, List<String> names, List<String> descriptions, boolean strong) throws DaoException {
+        try {
+            String query = QueryUtils.buildSelectByOptions(SELECT_CERTIFICATES_NOT_COMPLETED, tags, names, descriptions, strong);
+            RowMapper<TagData> tagDataMapper = new TagMapper();
+            RowMapper<CertificateData> certificateDataMapper = new CertificateMapper();
+            RowMapper<CertificateData> certificateWithTagDataMapper = new CertificateWithTagMapper(certificateDataMapper, tagDataMapper);
+            List<CertificateData> certificateDataRows = jdbcTemplate.query(query, certificateWithTagDataMapper);
+            CertificateTagsPropertyCombiner propertyCombiner = new CertificateTagsPropertyCombiner();
+            return propertyCombiner.combine(certificateDataRows);
+
+        } catch (DataAccessException e) {
+            throw new DaoException("Can't find certificates data by options");
+        }
+    }
+
+    @Override
     public List<CertificateData> findByTagId(int id) throws DaoException {
         try {
             RowMapper<CertificateData> certificateMapper = new CertificateMapper();
@@ -160,20 +177,6 @@ public class CertificateDaoImpl implements CertificateDao {
             return propertyCombiner.combine(certificateRows);
         } catch (DataAccessException e) {
             throw new DaoException("Can't find certificates by tag id", e);
-        }
-    }
-
-    @Override
-    public List<CertificateData> findByNameOrDescription(String[] searches) throws DaoException {
-        try {
-            RowMapper<CertificateData> certificateMapper = new CertificateMapper();
-            RowMapper<TagData> tagMapper = new TagMapper();
-            String query = QueryUtils.buildSelectByCertNameOrDescQuery(SELECT_CERTIFICATES_BY_PART_OF_NAME_OR_DESCRIPTION_NOT_COMPLETED, searches);
-            List<CertificateData> certificateRows = jdbcTemplate.query(query,
-                    new CertificateWithTagMapper(certificateMapper, tagMapper));
-            return propertyCombiner.combine(certificateRows);
-        } catch (DataAccessException e) {
-            throw new DaoException("Can't find certificates by name or description", e);
         }
     }
 

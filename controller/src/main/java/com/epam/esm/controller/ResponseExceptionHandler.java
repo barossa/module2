@@ -21,6 +21,8 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.MethodArgumentConversionNotSupportedException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
@@ -38,6 +40,8 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
     static {
         exceptions.put(TypeMismatchException.class, BAD_REQUEST_PARAMETERS);
         exceptions.put(MethodArgumentNotValidException.class, BAD_REQUEST_PARAMETERS);
+        exceptions.put(MethodArgumentTypeMismatchException.class, BAD_REQUEST_PARAMETERS);
+        exceptions.put(MethodArgumentConversionNotSupportedException.class, BAD_REQUEST_PARAMETERS);
         exceptions.put(BindException.class, BAD_REQUEST_PARAMETERS);
         exceptions.put(MissingPathVariableException.class, BAD_REQUEST_PARAMETERS);
         exceptions.put(MissingServletRequestParameterException.class, BAD_REQUEST_PARAMETERS);
@@ -74,20 +78,24 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.valueOf(OBJECT_VALIDATION_ERROR.getStatusCode()));
     }
 
-    private ResponseEntity<Object> handle(ErrorCode error) {
-        HttpStatus httpStatus = HttpStatus.valueOf(error.getStatusCode());
-        ErrorResponse errorResponse = responseBuilder.build(error);
-        return new ResponseEntity<>(errorResponse, httpStatus);
-    }
-
-    @Override
     @ExceptionHandler(value = AbstractServiceException.class)
-    protected ResponseEntity<Object> handleExceptionInternal(Exception ex, Object body, HttpHeaders headers, HttpStatus status, WebRequest request) {
+    protected ResponseEntity<Object> handleException(Exception ex) {
         ErrorCode errorCode = exceptions.get(ex.getClass());
         if (errorCode != null) {
             return handle(errorCode);
         }
         logger.warn("Caught unknown internal exception: {}: {}.", ex.getClass(), ex.getMessage());
         return handle(ErrorCode.UNKNOWN_INTERNAL_ERROR);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleExceptionInternal(Exception ex, Object body, HttpHeaders headers, HttpStatus status, WebRequest request) {
+        return handleException(ex);
+    }
+
+    private ResponseEntity<Object> handle(ErrorCode error) {
+        HttpStatus httpStatus = HttpStatus.valueOf(error.getStatusCode());
+        ErrorResponse errorResponse = responseBuilder.build(error);
+        return new ResponseEntity<>(errorResponse, httpStatus);
     }
 }
