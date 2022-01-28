@@ -46,6 +46,8 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
         exceptions.put(MissingPathVariableException.class, BAD_REQUEST_PARAMETERS);
         exceptions.put(MissingServletRequestParameterException.class, BAD_REQUEST_PARAMETERS);
         exceptions.put(HttpRequestMethodNotSupportedException.class, METHOD_NOT_SUPPORTED);
+        exceptions.put(NoHandlerFoundException.class, PATH_NOT_FOUND);
+        exceptions.put(HttpMediaTypeNotAcceptableException.class, CONTENT_TYPE_NOT_ACCEPTABLE);
 
         exceptions.put(DataAccessException.class, DATA_ACCESS_ERROR);
         exceptions.put(EmptySearchRequestException.class, EMPTY_SEARCH_REQUEST);
@@ -54,8 +56,7 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
         exceptions.put(ObjectNotFoundException.class, OBJECT_NOT_FOUND);
         exceptions.put(ObjectNotPresentedForUpdateException.class, OBJECT_NOT_PRESENTED_FOR_UPDATE);
         exceptions.put(ObjectPostingException.class, OBJECT_POSTING_ERROR);
-        exceptions.put(NoHandlerFoundException.class, PATH_NOT_FOUND);
-        exceptions.put(HttpMediaTypeNotAcceptableException.class, CONTENT_TYPE_NOT_ACCEPTABLE);
+        exceptions.put(InvalidSortParametersException.class, INVALID_SORT_PARAMETERS);
     }
 
     private final ErrorResponseBuilder responseBuilder;

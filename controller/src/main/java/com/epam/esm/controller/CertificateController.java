@@ -1,6 +1,7 @@
 package com.epam.esm.controller;
 
 import com.epam.esm.service.CertificateService;
+import com.epam.esm.service.CertificateSortUtils;
 import com.epam.esm.service.dto.CertificateDto;
 import com.epam.esm.service.dto.Filter;
 import com.epam.esm.service.dto.TagDto;
@@ -62,11 +63,11 @@ public class CertificateController {
     public ResponseEntity<Object> searchByOptions(@RequestParam(name = "tag", required = false) List<String> tags,
                                                   @RequestParam(name = "name", required = false) List<String> names,
                                                   @RequestParam(name = "description", required = false) List<String> descriptions,
-                                                  @RequestParam(name = "mode", required = false, defaultValue = "1") boolean mode) {
-        System.out.println(mode);
-
+                                                  @RequestParam(name = "mode", required = false, defaultValue = "1") boolean mode,
+                                                  @RequestParam(name = "sort", required = false) Set<String> sorts) {
         List<CertificateDto> certificates = certificateService.findByFilter(new Filter(tags, names, descriptions, mode));
-        return ResponseEntity.ok().body(certificates);
+        List<CertificateDto> sortedCertificates = CertificateSortUtils.sort(certificates, sorts);
+        return ResponseEntity.ok().body(sortedCertificates);
     }
 
 }
