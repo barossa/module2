@@ -1,6 +1,5 @@
-package com.epam.esm.model.mapper;
+package com.epam.esm.model.util;
 
-import com.epam.esm.model.PropertyCombiner;
 import com.epam.esm.model.dto.CertificateData;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;

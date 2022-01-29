@@ -6,7 +6,7 @@ import org.springframework.jdbc.core.RowMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import static com.epam.esm.model.EntityUtils.UNDEFINED_ID;
+import static com.epam.esm.model.util.EntityUtils.UNDEFINED_ID;
 import static com.epam.esm.model.dao.ColumnName.*;
 
 public class CertificateMapper implements RowMapper<CertificateData> {

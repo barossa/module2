@@ -8,7 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Set;
 
-import static com.epam.esm.model.EntityUtils.UNDEFINED_ID;
+import static com.epam.esm.model.util.EntityUtils.UNDEFINED_ID;
 
 public class CertificateWithTagMapper implements RowMapper<CertificateData> {
     private final RowMapper<CertificateData> certificateMapper;

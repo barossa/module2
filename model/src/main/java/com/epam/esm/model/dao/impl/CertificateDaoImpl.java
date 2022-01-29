@@ -1,16 +1,16 @@
 package com.epam.esm.model.dao.impl;
 
-import com.epam.esm.model.PropertyCombiner;
+import com.epam.esm.model.util.PropertyCombiner;
 import com.epam.esm.model.dao.CertificateDao;
 import com.epam.esm.model.dao.QueryUtils;
 import com.epam.esm.model.dao.TagDao;
 import com.epam.esm.model.dto.CertificateData;
 import com.epam.esm.model.dto.TagData;
 import com.epam.esm.model.exception.DaoException;
-import com.epam.esm.model.mapper.CertificateMapper;
-import com.epam.esm.model.mapper.CertificateTagsPropertyCombiner;
-import com.epam.esm.model.mapper.CertificateWithTagMapper;
-import com.epam.esm.model.mapper.TagMapper;
+import com.epam.esm.model.mapper.*;
+import com.epam.esm.model.util.CertificateTagsPropertyCombiner;
+import com.epam.esm.model.util.DeleteCertificateTagBatchSetterImpl;
+import com.epam.esm.model.util.InsertCertificateTagBatchSetterImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -28,7 +28,7 @@ import static com.epam.esm.model.dao.TableName.*;
 
 @Component
 public class CertificateDaoImpl implements CertificateDao {
-    private static final String INSERT_CERTIFICATES_TAG = "INSERT INTO " + CERTIFICATE_TAGS + " (" + CERTIFICATE_TAGS_CERTIFICATE_ID + "," + CERTIFICATE_TAGS_TAG_ID + ") VALUES(?,?);";
+    private static final String INSERT_CERTIFICATES_TAG = "INSERT INTO " + CERTIFICATE_TAGS + " (" + getColumnName(CERTIFICATE_TAGS_CERTIFICATE_ID) + "," + getColumnName(CERTIFICATE_TAGS_TAG_ID) + ") VALUES(?,?);";
 
     private static final String SELECT_CERTIFICATE_BY_ID = "SELECT " + CERTIFICATES_ID + "," + CERTIFICATES_NAME + "," + CERTIFICATES_DESCRIPTION + "," + CERTIFICATES_PRICE + ","
             + CERTIFICATES_DURATION + "," + CERTIFICATES_CREATE_DATE + "," + CERTIFICATES_LAST_UPDATE_DATE + " FROM " + CERTIFICATES
@@ -93,7 +93,7 @@ public class CertificateDaoImpl implements CertificateDao {
 
             SimpleJdbcInsert insert = new SimpleJdbcInsert(jdbcTemplate);
             insert.withTableName(CERTIFICATES)
-                    .usingGeneratedKeyColumns(CERTIFICATES_ID);
+                    .usingGeneratedKeyColumns(getColumnName(CERTIFICATES_ID));
 
             Map<String, Object> parameters = getCertificateParameterMap(certificate);
             Number generatedKey = insert.executeAndReturnKey(parameters);

@@ -1,4 +1,4 @@
-package com.epam.esm.model.dao.impl;
+package com.epam.esm.model.util;
 
 import com.epam.esm.model.dto.CertificateData;
 import com.epam.esm.model.dto.TagData;

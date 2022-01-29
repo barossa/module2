@@ -1,6 +1,6 @@
 package com.epam.esm.service.impl;
 
-import com.epam.esm.model.EntityUtils;
+import com.epam.esm.model.util.EntityUtils;
 import com.epam.esm.model.dao.CertificateDao;
 import com.epam.esm.model.dao.TagDao;
 import com.epam.esm.model.dto.CertificateData;

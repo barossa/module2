@@ -1,12 +1,13 @@
 package com.epam.esm.model.dao.impl;
 
-import com.epam.esm.model.PropertyCombiner;
+import com.epam.esm.model.util.PropertyCombiner;
 import com.epam.esm.model.dao.QueryUtils;
 import com.epam.esm.model.dao.TagDao;
 import com.epam.esm.model.dto.CertificateData;
 import com.epam.esm.model.dto.TagData;
 import com.epam.esm.model.exception.DaoException;
 import com.epam.esm.model.mapper.CertificateMapper;
+import com.epam.esm.model.util.InsertTagBatchSetterImpl;
 import com.epam.esm.model.mapper.TagMapper;
 import com.epam.esm.model.mapper.TagWithCertificateMapper;
 import org.springframework.dao.DataAccessException;
@@ -24,7 +25,7 @@ import static com.epam.esm.model.dao.TableName.*;
 
 @Component
 public class TagDaoImpl implements TagDao {
-    private static final String INSERT_TAG = "INSERT IGNORE INTO " + TAGS + " (" + TAGS_NAME + ") VALUES(?);";
+    private static final String INSERT_TAG = "INSERT IGNORE INTO " + TAGS + " (" + getColumnName(TAGS_NAME) + ") VALUES(?);";
 
     private static final String SELECT_TAG_BY_ID = "SELECT " + TAGS_ID + "," + TAGS_NAME + " FROM " + TAGS
             + " WHERE " + TAGS_ID + "=?;";
@@ -70,7 +71,7 @@ public class TagDaoImpl implements TagDao {
         try {
             SimpleJdbcInsert insert = new SimpleJdbcInsert(jdbcTemplate);
             insert.withTableName(TAGS)
-                    .usingGeneratedKeyColumns(TAGS_ID);
+                    .usingGeneratedKeyColumns(getColumnName(TAGS_ID));
 
             Map<String, Object> parameters = new HashMap<>();
             parameters.put(getColumnName(TAGS_NAME), tag.getName());

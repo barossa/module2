@@ -1,4 +1,4 @@
-package com.epam.esm.model;
+package com.epam.esm.model.util;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
