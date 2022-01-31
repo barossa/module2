@@ -1,20 +1,34 @@
 package com.epam.esm.controller.config;
 
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 
 import javax.sql.DataSource;
 
+@Configuration
+@PropertySource({"classpath:props/db.properties", "classpath:props/dev.properties"})
 public class DevAppConfig {
-    private static final int POOL_INITIAL_SIZE = 1;
-    private static final int POOL_MAX_SIZE = 2;
 
-    private static final String DATASOURCE_URL = "jdbc:mysql://localhost:3306/rest-basics32423";
-    private static final String DATASOURCE_DRIVER = "com.mysql.jdbc.Driver";
-    private static final String USERNAME = "";
-    private static final String PASSWORD = "";
-    // TODO: 19.01.2022 TEST DB & DATASOURCE
+    @Value("${pool.initialSize}")
+    private int POOL_INITIAL_SIZE;
 
+    @Value("${pool.maxSize}")
+    private int POOL_MAX_SIZE;
+
+    @Value("${datasource.url}")
+    private String DATASOURCE_URL;
+
+    @Value("${datasource.driver}")
+    private String DATASOURCE_DRIVER;
+
+    @Value("${datasource.username}")
+    private String USERNAME;
+
+    @Value("${datasource.password}")
+    private String PASSWORD;
 
     @Bean
     public DataSource dataSource() {

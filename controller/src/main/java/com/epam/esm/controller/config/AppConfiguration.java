@@ -3,10 +3,13 @@ package com.epam.esm.controller.config;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -18,14 +21,17 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import javax.sql.DataSource;
 import java.util.Locale;
 
-@Configuration
-@ComponentScan(value = {"com.epam.esm"})
 @EnableWebMvc
+@ComponentScan(value = {"com.epam.esm"})
+@Configuration
 public class AppConfiguration {
     private static final String MESSAGES_BUNDLE_NAME = "lang/messages";
     private static final String MESSAGES_ENCODING = "UTF-8";
 
     private static final Locale DEFAULT_LOCALE = Locale.US;
+
+    private static final int POOL_INITIAL_SIZE = 2;
+    private static final int POOL_MAX_SIZE = 5;
 
     public AppConfiguration(RequestMappingHandlerAdapter adapter) {
         adapter.getMessageConverters()
@@ -58,5 +64,6 @@ public class AppConfiguration {
         acceptHeaderLocaleResolver.setDefaultLocale(DEFAULT_LOCALE);
         return acceptHeaderLocaleResolver;
     }
+
 }
 
