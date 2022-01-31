@@ -1,16 +1,18 @@
 package com.epam.esm.model.dao.impl;
 
-import com.epam.esm.model.util.PropertyCombiner;
 import com.epam.esm.model.dao.CertificateDao;
 import com.epam.esm.model.dao.QueryUtils;
 import com.epam.esm.model.dao.TagDao;
 import com.epam.esm.model.dto.CertificateData;
 import com.epam.esm.model.dto.TagData;
 import com.epam.esm.model.exception.DaoException;
-import com.epam.esm.model.mapper.*;
+import com.epam.esm.model.mapper.CertificateMapper;
+import com.epam.esm.model.mapper.CertificateWithTagMapper;
+import com.epam.esm.model.mapper.TagMapper;
 import com.epam.esm.model.util.CertificateTagsPropertyCombiner;
 import com.epam.esm.model.util.DeleteCertificateTagBatchSetterImpl;
 import com.epam.esm.model.util.InsertCertificateTagBatchSetterImpl;
+import com.epam.esm.model.util.PropertyCombiner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -48,8 +50,7 @@ public class CertificateDaoImpl implements CertificateDao {
     private static final String SELECT_CERTIFICATES_NOT_COMPLETED = "SELECT " + CERTIFICATES_ID + "," + CERTIFICATES_NAME + "," + CERTIFICATES_DESCRIPTION + "," + CERTIFICATES_PRICE + ","
             + CERTIFICATES_DURATION + "," + CERTIFICATES_CREATE_DATE + "," + CERTIFICATES_LAST_UPDATE_DATE + "," + TAGS_ID + "," + TAGS_NAME + " FROM " + CERTIFICATES
             + " LEFT JOIN " + CERTIFICATE_TAGS + " ON " + CERTIFICATE_TAGS_CERTIFICATE_ID + "=" + CERTIFICATES_ID
-            + " LEFT JOIN " + TAGS + " ON " + CERTIFICATE_TAGS_TAG_ID + "=" + TAGS_ID
-            + " WHERE";
+            + " LEFT JOIN " + TAGS + " ON " + CERTIFICATE_TAGS_TAG_ID + "=" + TAGS_ID;
 
     private static final String UPDATE_CERTIFICATE = "UPDATE " + CERTIFICATES + " SET " + CERTIFICATES_NAME + "=?," + CERTIFICATES_DESCRIPTION + "=?," + CERTIFICATES_PRICE + "=?,"
             + CERTIFICATES_DURATION + "=?," + CERTIFICATES_CREATE_DATE + "=?," + CERTIFICATES_LAST_UPDATE_DATE + "=?"

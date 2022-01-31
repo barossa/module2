@@ -24,9 +24,14 @@ public class CertificateController {
     }
 
     @GetMapping
-    public ResponseEntity<Object> getAllCertificates() {
-        List<CertificateDto> certificates = certificateService.findAll();
-        return ResponseEntity.ok(certificates);
+    public ResponseEntity<Object> searchByOptions(@RequestParam(name = "tag", required = false) List<String> tags,
+                                                  @RequestParam(name = "name", required = false) List<String> names,
+                                                  @RequestParam(name = "description", required = false) List<String> descriptions,
+                                                  @RequestParam(name = "mode", required = false, defaultValue = "1") boolean mode,
+                                                  @RequestParam(name = "sort", required = false) Set<String> sorts) {
+        List<CertificateDto> certificates = certificateService.findByFilter(new Filter(tags, names, descriptions, mode));
+        List<CertificateDto> sortedCertificates = CertificateSortUtils.sort(certificates, sorts);
+        return ResponseEntity.ok().body(sortedCertificates);
     }
 
     @GetMapping(value = "/{id:^[0-9]+$}")
@@ -58,16 +63,4 @@ public class CertificateController {
         certificateService.delete(id);
         return ResponseEntity.ok(null);
     }
-
-    @GetMapping("/search")
-    public ResponseEntity<Object> searchByOptions(@RequestParam(name = "tag", required = false) List<String> tags,
-                                                  @RequestParam(name = "name", required = false) List<String> names,
-                                                  @RequestParam(name = "description", required = false) List<String> descriptions,
-                                                  @RequestParam(name = "mode", required = false, defaultValue = "1") boolean mode,
-                                                  @RequestParam(name = "sort", required = false) Set<String> sorts) {
-        List<CertificateDto> certificates = certificateService.findByFilter(new Filter(tags, names, descriptions, mode));
-        List<CertificateDto> sortedCertificates = CertificateSortUtils.sort(certificates, sorts);
-        return ResponseEntity.ok().body(sortedCertificates);
-    }
-
 }

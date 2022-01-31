@@ -12,6 +12,7 @@ public final class QueryUtils {
     private static final String SQL_QUOTE = "'";
     private static final String SQL_PERCENT = "%";
     private static final String SQL_LIKE = "LIKE";
+    private static final String SQL_WHERE = "WHERE";
 
     private QueryUtils() {
     }
@@ -32,7 +33,10 @@ public final class QueryUtils {
     }
 
     public static String buildSelectByOptions(String notCompleted, List<String> tags, List<String> names, List<String> descriptions, boolean strong) {
-        StringBuilder builder = new StringBuilder(notCompleted);
+        if(tags.isEmpty() && names.isEmpty() && descriptions.isEmpty()){
+            return notCompleted;
+        }
+        StringBuilder builder = new StringBuilder(notCompleted + " " + SQL_WHERE);
         tags.forEach(tag -> appendCondition(builder, TAGS_NAME, tag, strong));
         names.forEach(name -> appendCondition(builder, CERTIFICATES_NAME, name, strong));
         descriptions.forEach(description -> appendCondition(builder, CERTIFICATES_DESCRIPTION, description, strong));

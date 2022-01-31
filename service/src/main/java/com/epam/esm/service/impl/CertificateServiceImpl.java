@@ -1,11 +1,11 @@
 package com.epam.esm.service.impl;
 
-import com.epam.esm.model.util.EntityUtils;
 import com.epam.esm.model.dao.CertificateDao;
 import com.epam.esm.model.dao.TagDao;
 import com.epam.esm.model.dto.CertificateData;
 import com.epam.esm.model.dto.TagData;
 import com.epam.esm.model.exception.DaoException;
+import com.epam.esm.model.util.EntityUtils;
 import com.epam.esm.service.CertificateService;
 import com.epam.esm.service.dto.CertificateDto;
 import com.epam.esm.service.dto.DtoMapper;
@@ -160,9 +160,6 @@ public class CertificateServiceImpl implements CertificateService {
             return b;
         };
         initFilter(filter);
-        if(filter.getTags().isEmpty() && filter.getNames().isEmpty() && filter.getDescriptions().isEmpty()){
-            throw new EmptySearchRequestException();
-        }
         List<String> tagErrors = filter.getTags().stream()
                 .map(tagValidator::validateName)
                 .reduce(new ArrayList<>(), listCombiner);
@@ -179,14 +176,14 @@ public class CertificateServiceImpl implements CertificateService {
         }
     }
 
-    private void initFilter(Filter filter){
-        if(filter.getNames() == null){
+    private void initFilter(Filter filter) {
+        if (filter.getNames() == null) {
             filter.setNames(Collections.emptyList());
         }
-        if(filter.getTags() == null){
+        if (filter.getTags() == null) {
             filter.setTags(Collections.emptyList());
         }
-        if(filter.getDescriptions() == null){
+        if (filter.getDescriptions() == null) {
             filter.setDescriptions(Collections.emptyList());
         }
     }
