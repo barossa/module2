@@ -3,13 +3,10 @@ package com.epam.esm.controller.config;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import org.apache.commons.dbcp2.BasicDataSource;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -30,19 +27,8 @@ public class AppConfiguration {
 
     private static final Locale DEFAULT_LOCALE = Locale.US;
 
-    private static final int POOL_INITIAL_SIZE = 2;
-    private static final int POOL_MAX_SIZE = 5;
-
     public AppConfiguration(RequestMappingHandlerAdapter adapter) {
-        adapter.getMessageConverters()
-                .forEach(converter -> {
-                    if (converter instanceof MappingJackson2HttpMessageConverter) {
-                        MappingJackson2HttpMessageConverter jacksonConverter = (MappingJackson2HttpMessageConverter) converter;
-                        ObjectMapper objectMapper = jacksonConverter.getObjectMapper();
-                        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-                        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-                    }
-                });
+        configureJackson2HttpConverter(adapter);
     }
 
     @Bean
@@ -65,5 +51,16 @@ public class AppConfiguration {
         return acceptHeaderLocaleResolver;
     }
 
+    private void configureJackson2HttpConverter(RequestMappingHandlerAdapter adapter) {
+        adapter.getMessageConverters()
+                .forEach(converter -> {
+                    if (converter instanceof MappingJackson2HttpMessageConverter) {
+                        MappingJackson2HttpMessageConverter jacksonConverter = (MappingJackson2HttpMessageConverter) converter;
+                        ObjectMapper objectMapper = jacksonConverter.getObjectMapper();
+                        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+                        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+                    }
+                });
+    }
 }
 

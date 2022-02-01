@@ -33,15 +33,16 @@ public final class QueryUtils {
     }
 
     public static String buildSelectByOptions(String notCompleted, List<String> tags, List<String> names, List<String> descriptions, boolean strong) {
-        if(tags.isEmpty() && names.isEmpty() && descriptions.isEmpty()){
+        if (tags.isEmpty() && names.isEmpty() && descriptions.isEmpty()) {
             return notCompleted;
         }
+
         StringBuilder builder = new StringBuilder(notCompleted + " " + SQL_WHERE);
         tags.forEach(tag -> appendCondition(builder, TAGS_NAME, tag, strong));
         names.forEach(name -> appendCondition(builder, CERTIFICATES_NAME, name, strong));
         descriptions.forEach(description -> appendCondition(builder, CERTIFICATES_DESCRIPTION, description, strong));
-        int appendix = strong ? SQL_AND.length() : SQL_OR.length();
-        builder.replace(builder.length() - appendix - 1, builder.length(), ";");
+
+        completeQuery(builder, strong);
         return builder.toString();
     }
 
@@ -51,12 +52,17 @@ public final class QueryUtils {
                 .append(" ")
                 .append(SQL_LIKE)
                 .append(" ")
-                    .append(SQL_QUOTE)
+                .append(SQL_QUOTE)
                 .append(SQL_PERCENT)
                 .append(condition)
                 .append(SQL_PERCENT)
-                    .append(SQL_QUOTE)
+                .append(SQL_QUOTE)
                 .append(" ")
                 .append(strong ? SQL_AND : SQL_OR);
+    }
+
+    private static void completeQuery(StringBuilder builder, boolean strong) {
+        int appendix = strong ? SQL_AND.length() : SQL_OR.length();
+        builder.replace(builder.length() - appendix - 1, builder.length(), ";");
     }
 }

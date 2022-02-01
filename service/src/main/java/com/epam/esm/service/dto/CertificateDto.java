@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.Set;
 
 @Data
@@ -20,5 +19,5 @@ public class CertificateDto {
     private Long duration;
     private LocalDateTime createDate;
     private LocalDateTime lastUpdateDate;
-    private Set<TagDto> tags = new HashSet<>();
+    private Set<TagDto> tags;
 }

@@ -1,15 +1,17 @@
-package com.epam.esm.controller.config;
+package com.epam.esm.model.config;
 
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 import javax.sql.DataSource;
 
-
-@PropertySource({"classpath:props/db.properties", "classpath:props/prod.properties"})
-public class ProductionAppConfig {
+@Configuration
+// dev.properties - dev configuration, prod.properties - production configuration
+@PropertySource({"classpath:props/db.properties", "classpath:props/dev.properties"})
+public class DaoConfig {
 
     @Value("${pool.initialSize}")
     private int POOL_INITIAL_SIZE;
@@ -40,5 +42,4 @@ public class ProductionAppConfig {
         dataSource.setPassword(PASSWORD);
         return dataSource;
     }
-
 }

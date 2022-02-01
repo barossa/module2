@@ -116,16 +116,18 @@ public class CertificateServiceImpl implements CertificateService {
             if (oldCertificateData == null) {
                 throw new ObjectNotPresentedForUpdateException();
             }
+
             CertificateData newCertificateData = DtoMapper.mapCertificateToData(certificate);
             EntityUtils.replaceNullProperties(oldCertificateData, newCertificateData);
-            validateCertificate(certificate);
+            CertificateDto newCertificateDto = DtoMapper.mapCertificateFromData(newCertificateData);
+            validateCertificate(newCertificateDto);
 
-            Set<TagData> tagsData = DtoMapper.mapTagsToData(certificate.getTags(), Collectors.toSet());
+            Set<TagData> tagsData = DtoMapper.mapTagsToData(newCertificateDto.getTags(), Collectors.toSet());
             Set<TagData> savedTagsData = tagDao.saveAll(tagsData);
             Set<TagDto> savedTags = DtoMapper.mapTagsFromData(savedTagsData, Collectors.toSet());
-            certificate.setTags(savedTags);
+            newCertificateDto.setTags(savedTags);
 
-            CertificateData certificateData = DtoMapper.mapCertificateToData(certificate);
+            CertificateData certificateData = DtoMapper.mapCertificateToData(newCertificateDto);
             return certificateDao.update(certificateData);
 
         } catch (DaoException e) {

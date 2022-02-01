@@ -4,14 +4,12 @@ import com.epam.esm.service.CertificateService;
 import com.epam.esm.service.CertificateSortUtils;
 import com.epam.esm.service.dto.CertificateDto;
 import com.epam.esm.service.dto.Filter;
-import com.epam.esm.service.dto.TagDto;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 
 /**
@@ -19,17 +17,9 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping(value = "/certificates")
+@RequiredArgsConstructor
 public class CertificateController {
     private final CertificateService certificateService;
-
-    /**
-     * Instantiates a new Certificate controller.
-     *
-     * @param certificateService the certificate service
-     */
-    public CertificateController(CertificateService certificateService) {
-        this.certificateService = certificateService;
-    }
 
     /**
      * Search certificates by filter params.
@@ -68,19 +58,15 @@ public class CertificateController {
      * Add new certificate.
      *
      * @param certificate the certificate data transfer object
-     * @param name *the certificate name
+     * @param name        *the certificate name
      * @param description *the certificate description
-     * @param price *the certificate price
-     * @param duration *the certificate duration
+     * @param price       *the certificate price
+     * @param duration    *the certificate duration
      * @param tags        *the tags to be attached
      * @return the added certificate object
      */
     @PostMapping
-    public ResponseEntity<Object> addCertificate(CertificateDto certificate, @RequestParam(name = "tag") String[] tags) {
-        Set<TagDto> collectedTags = Arrays.stream(tags)
-                .map(TagDto::new)
-                .collect(Collectors.toSet());
-        certificate.setTags(collectedTags);
+    public ResponseEntity<Object> addCertificate(CertificateDto certificate) {
         CertificateDto savedCertificate = certificateService.save(certificate);
         return ResponseEntity.ok().body(savedCertificate);
     }
@@ -93,8 +79,7 @@ public class CertificateController {
      * @return the patched certificate object
      */
     @PatchMapping(value = "/{id:^[0-9]+$}")
-    public ResponseEntity<Object> modifyCertificate(CertificateDto certificate, @RequestParam(required = false, name = "tag") Set<TagDto> tags) {
-        certificate.setTags(tags);
+    public ResponseEntity<Object> modifyCertificate(CertificateDto certificate) {
         certificateService.update(certificate);
         CertificateDto updatedCertificate = certificateService.find(certificate.getId());
         return ResponseEntity.ok().body(updatedCertificate);

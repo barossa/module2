@@ -1,6 +1,7 @@
 package com.epam.esm.service.validator.impl;
 
 import com.epam.esm.service.validator.ErrorMessageProvider;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
@@ -13,7 +14,7 @@ public class ErrorMessageProviderImpl implements ErrorMessageProvider {
 
     private final MessageSource messageSource;
 
-    public ErrorMessageProviderImpl(MessageSource messageSource) {
+    public ErrorMessageProviderImpl(@Qualifier("validatorMessageSource") MessageSource messageSource) {
         this.messageSource = messageSource;
     }
 

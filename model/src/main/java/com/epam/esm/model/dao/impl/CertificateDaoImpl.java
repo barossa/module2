@@ -33,7 +33,9 @@ public class CertificateDaoImpl implements CertificateDao {
     private static final String INSERT_CERTIFICATES_TAG = "INSERT INTO " + CERTIFICATE_TAGS + " (" + getColumnName(CERTIFICATE_TAGS_CERTIFICATE_ID) + "," + getColumnName(CERTIFICATE_TAGS_TAG_ID) + ") VALUES(?,?);";
 
     private static final String SELECT_CERTIFICATE_BY_ID = "SELECT " + CERTIFICATES_ID + "," + CERTIFICATES_NAME + "," + CERTIFICATES_DESCRIPTION + "," + CERTIFICATES_PRICE + ","
-            + CERTIFICATES_DURATION + "," + CERTIFICATES_CREATE_DATE + "," + CERTIFICATES_LAST_UPDATE_DATE + " FROM " + CERTIFICATES
+            + CERTIFICATES_DURATION + "," + CERTIFICATES_CREATE_DATE + "," + CERTIFICATES_LAST_UPDATE_DATE + "," + TAGS_ID + "," + TAGS_NAME + " FROM " + CERTIFICATES
+            + " LEFT JOIN " + CERTIFICATE_TAGS + " ON " + CERTIFICATE_TAGS_CERTIFICATE_ID + "=" + CERTIFICATES_ID
+            + " LEFT JOIN " + TAGS + " ON " + CERTIFICATE_TAGS_TAG_ID + "=" + TAGS_ID
             + " WHERE " + CERTIFICATES_ID + "=?;";
 
     private static final String SELECT_ALL_CERTIFICATES = "SELECT " + CERTIFICATES_ID + "," + CERTIFICATES_NAME + "," + CERTIFICATES_DESCRIPTION + "," + CERTIFICATES_PRICE + ","
@@ -75,8 +77,13 @@ public class CertificateDaoImpl implements CertificateDao {
     @Override
     public CertificateData find(int id) throws DaoException {
         try {
-            List<CertificateData> certificates = jdbcTemplate.query(SELECT_CERTIFICATE_BY_ID, new CertificateMapper(), id);
-            return certificates.stream()
+            RowMapper<TagData> tagMapper = new TagMapper();
+            RowMapper<CertificateData> certificateMapper = new CertificateMapper();
+            List<CertificateData> certificates = jdbcTemplate.query(SELECT_CERTIFICATE_BY_ID, new CertificateWithTagMapper(certificateMapper, tagMapper), id);
+
+            PropertyCombiner<CertificateData> propertyCombiner = new CertificateTagsPropertyCombiner();
+            List<CertificateData> certificatesData = propertyCombiner.combine(certificates);
+            return certificatesData.stream()
                     .findFirst()
                     .orElse(null);
         } catch (DataAccessException e) {

@@ -5,10 +5,10 @@ import com.epam.esm.controller.dto.ErrorResponse;
 import com.epam.esm.controller.dto.ErrorResponseBuilder;
 import com.epam.esm.service.exception.AbstractServiceException;
 import com.epam.esm.service.exception.extend.*;
+import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.TypeMismatchException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +32,7 @@ import java.util.Map;
 import static com.epam.esm.controller.dto.ErrorCode.*;
 
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
     private static final Logger logger = LogManager.getLogger(ResponseExceptionHandler.class);
 
@@ -61,11 +62,6 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
 
     private final ErrorResponseBuilder responseBuilder;
 
-    @Autowired
-    public ResponseExceptionHandler(ErrorResponseBuilder responseBuilder) {
-        this.responseBuilder = responseBuilder;
-    }
-
     @ExceptionHandler(value = {NullPointerException.class})
     protected ResponseEntity<Object> handleNullPointerException(RuntimeException ex) {
         logger.error(ex);
@@ -82,11 +78,11 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(value = AbstractServiceException.class)
     protected ResponseEntity<Object> handleException(Exception ex) {
         ErrorCode errorCode = exceptions.get(ex.getClass());
-        if (errorCode != null) {
-            return handle(errorCode);
+        if (errorCode == null) {
+            errorCode = ErrorCode.UNKNOWN_INTERNAL_ERROR;
+            logger.warn("Caught unknown internal exception: {}: {}.", ex.getClass(), ex.getMessage());
         }
-        logger.warn("Caught unknown internal exception: {}: {}.", ex.getClass(), ex.getMessage());
-        return handle(ErrorCode.UNKNOWN_INTERNAL_ERROR);
+        return handle(errorCode);
     }
 
     @Override

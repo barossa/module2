@@ -2,6 +2,7 @@ package com.epam.esm.controller;
 
 import com.epam.esm.service.TagService;
 import com.epam.esm.service.dto.TagDto;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,17 +13,9 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value = "/tags")
+@RequiredArgsConstructor
 public class TagController {
     private final TagService tagService;
-
-    /**
-     * Instantiates a new Tag controller.
-     *
-     * @param tagService the tag service
-     */
-    public TagController(TagService tagService) {
-        this.tagService = tagService;
-    }
 
     /**
      * Gets all tag objects.
