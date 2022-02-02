@@ -11,5 +11,4 @@ public class Filter {
     private List<String> tags;
     private List<String> names;
     private List<String> descriptions;
-    private boolean strong;
 }

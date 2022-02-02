@@ -14,9 +14,9 @@ import com.epam.esm.service.dto.TagDto;
 import com.epam.esm.service.exception.extend.*;
 import com.epam.esm.service.validator.CertificateValidator;
 import com.epam.esm.service.validator.TagValidator;
+import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +28,7 @@ import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class CertificateServiceImpl implements CertificateService {
     private static final Logger logger = LogManager.getLogger(CertificateServiceImpl.class);
 
@@ -35,15 +36,6 @@ public class CertificateServiceImpl implements CertificateService {
     private final TagDao tagDao;
     private final CertificateValidator certificateValidator;
     private final TagValidator tagValidator;
-
-    @Autowired
-    public CertificateServiceImpl(CertificateDao certificateDao, TagDao tagDao,
-                                  CertificateValidator certificateValidator, TagValidator tagValidator) {
-        this.certificateDao = certificateDao;
-        this.tagDao = tagDao;
-        this.certificateValidator = certificateValidator;
-        this.tagValidator = tagValidator;
-    }
 
     @Override
     @Transactional
@@ -70,9 +62,19 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
-    public int delete(int id) {
+    public CertificateDto delete(int id) {
         try {
-            return certificateDao.delete(id);
+            CertificateData certificateData = certificateDao.find(id);
+            if (certificateData == null) {
+                throw new ObjectNotPresentedForDelete();
+            }
+
+            int affectedObjects = certificateDao.delete(id);
+            if (affectedObjects == 0) {
+                throw new ObjectDeletionException();
+            }
+
+            return DtoMapper.mapCertificateFromData(certificateData);
         } catch (DaoException e) {
             logger.error("Can't delete certificate", e);
             throw new DataAccessException(e);
@@ -140,7 +142,7 @@ public class CertificateServiceImpl implements CertificateService {
     public List<CertificateDto> findByFilter(Filter filter) {
         try {
             validateFilter(filter);
-            List<CertificateData> certificatesData = certificateDao.findByOptions(filter.getTags(), filter.getNames(), filter.getDescriptions(), filter.isStrong());
+            List<CertificateData> certificatesData = certificateDao.findByOptions(filter.getTags(), filter.getNames(), filter.getDescriptions());
             return DtoMapper.mapCertificatesFromData(certificatesData, Collectors.toList());
 
         } catch (DaoException e) {

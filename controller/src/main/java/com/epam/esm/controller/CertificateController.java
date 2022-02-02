@@ -27,7 +27,7 @@ public class CertificateController {
      * @param tags         the certificate names
      * @param names        the certificate names
      * @param descriptions the certificate descriptions
-     * @param mode         the search mode (1 - full complete/0 - part of request)
+     * @param mode         the search mode (1 - full match/0 - part of request)
      * @param sorts        the sort type (NAME,DATE/ASC,DESC | Ex. NAME_ASC, DATE_DESC)
      * @return the certificate objects
      */
@@ -35,9 +35,8 @@ public class CertificateController {
     public ResponseEntity<Object> searchByOptions(@RequestParam(name = "tag", required = false) List<String> tags,
                                                   @RequestParam(name = "name", required = false) List<String> names,
                                                   @RequestParam(name = "description", required = false) List<String> descriptions,
-                                                  @RequestParam(name = "mode", required = false, defaultValue = "1") boolean mode,
                                                   @RequestParam(name = "sort", required = false) Set<String> sorts) {
-        List<CertificateDto> certificates = certificateService.findByFilter(new Filter(tags, names, descriptions, mode));
+        List<CertificateDto> certificates = certificateService.findByFilter(new Filter(tags, names, descriptions));
         List<CertificateDto> sortedCertificates = CertificateSortUtils.sort(certificates, sorts);
         return ResponseEntity.ok().body(sortedCertificates);
     }
@@ -93,7 +92,7 @@ public class CertificateController {
      */
     @DeleteMapping("/{id:^[0-9]+$}")
     public ResponseEntity<Object> deleteCertificate(@PathVariable int id) {
-        certificateService.delete(id);
-        return ResponseEntity.ok(null);
+        CertificateDto certificateDto = certificateService.delete(id);
+        return ResponseEntity.ok(certificateDto);
     }
 }

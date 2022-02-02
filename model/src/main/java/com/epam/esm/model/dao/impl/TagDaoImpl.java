@@ -1,15 +1,16 @@
 package com.epam.esm.model.dao.impl;
 
-import com.epam.esm.model.util.PropertyCombiner;
 import com.epam.esm.model.dao.QueryUtils;
 import com.epam.esm.model.dao.TagDao;
 import com.epam.esm.model.dto.CertificateData;
 import com.epam.esm.model.dto.TagData;
 import com.epam.esm.model.exception.DaoException;
 import com.epam.esm.model.mapper.CertificateMapper;
-import com.epam.esm.model.util.InsertTagBatchSetterImpl;
 import com.epam.esm.model.mapper.TagMapper;
 import com.epam.esm.model.mapper.TagWithCertificateMapper;
+import com.epam.esm.model.util.InsertTagBatchSetterImpl;
+import com.epam.esm.model.util.PropertyCombiner;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -24,6 +25,7 @@ import static com.epam.esm.model.dao.ColumnName.*;
 import static com.epam.esm.model.dao.TableName.*;
 
 @Component
+@RequiredArgsConstructor
 public class TagDaoImpl implements TagDao {
     private static final String INSERT_TAG = "INSERT IGNORE INTO " + TAGS + " (" + getColumnName(TAGS_NAME) + ") VALUES(?);";
 
@@ -49,11 +51,6 @@ public class TagDaoImpl implements TagDao {
 
     private final JdbcTemplate jdbcTemplate;
     private final PropertyCombiner<TagData> tagPropertyCombiner;
-
-    public TagDaoImpl(JdbcTemplate jdbcTemplate, PropertyCombiner<TagData> tagPropertyCombiner) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.tagPropertyCombiner = tagPropertyCombiner;
-    }
 
     @Override
     public TagData find(int id) throws DaoException {

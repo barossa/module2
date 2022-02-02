@@ -36,7 +36,7 @@ public class CertificateServiceImplTest {
                 LocalDateTime.now(), LocalDateTime.now(), Collections.emptySet());
         certificateDtos = new ArrayList<>();
         certificateDtos.add(certificateDto);
-        filter = new Filter(Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), true);
+        filter = new Filter(Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
     }
 
     @Test
@@ -62,9 +62,9 @@ public class CertificateServiceImplTest {
 
     @Test
     public void deleteTest() {
-        when(certificateService.delete(anyInt())).thenReturn(1);
-        int affectedObjects = certificateService.delete(1);
-        Assertions.assertNotEquals(affectedObjects, 0);
+        when(certificateService.delete(anyInt())).thenReturn(certificateDto);
+        CertificateDto actualCertificate = certificateService.delete(1);
+        Assertions.assertNotEquals(actualCertificate.getId(), 0);
     }
 
     @Test

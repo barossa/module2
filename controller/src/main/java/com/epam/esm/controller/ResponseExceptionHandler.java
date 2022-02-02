@@ -58,6 +58,8 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
         exceptions.put(ObjectNotPresentedForUpdateException.class, OBJECT_NOT_PRESENTED_FOR_UPDATE);
         exceptions.put(ObjectPostingException.class, OBJECT_POSTING_ERROR);
         exceptions.put(InvalidSortParametersException.class, INVALID_SORT_PARAMETERS);
+        exceptions.put(ObjectNotPresentedForDelete.class, OBJECT_NOT_PRESENTED_FOR_DELETE);
+        exceptions.put(ObjectDeletionException.class, OBJECT_DELETION_ERROR);
     }
 
     private final ErrorResponseBuilder responseBuilder;

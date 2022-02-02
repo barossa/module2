@@ -10,9 +10,9 @@ import com.epam.esm.service.dto.DtoMapper;
 import com.epam.esm.service.dto.TagDto;
 import com.epam.esm.service.exception.extend.*;
 import com.epam.esm.service.validator.TagValidator;
+import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -20,19 +20,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class TagServiceImpl implements TagService {
     private static final Logger logger = LogManager.getLogger(TagServiceImpl.class);
 
     private final TagDao tagDao;
     private final CertificateDao certificateDao;
     private final TagValidator tagValidator;
-
-    @Autowired
-    public TagServiceImpl(TagDao tagDao, CertificateDao certificateDao, TagValidator tagValidator) {
-        this.tagDao = tagDao;
-        this.certificateDao = certificateDao;
-        this.tagValidator = tagValidator;
-    }
 
     @Override
     public TagDto find(int id) {
@@ -86,9 +80,19 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public int delete(int id) {
+    public TagDto delete(int id) {
         try {
-            return tagDao.delete(id);
+            TagData tagData = tagDao.find(id);
+            if (tagData == null) {
+                throw new ObjectNotPresentedForDelete();
+            }
+
+            int affectedObjects = tagDao.delete(id);
+            if (affectedObjects == 0) {
+                throw new ObjectNotPresentedForDelete();
+            }
+
+            return DtoMapper.mapTagFromData(tagData);
         } catch (DaoException e) {
             logger.error("Can't delete tag", e);
             throw new DataAccessException(e);

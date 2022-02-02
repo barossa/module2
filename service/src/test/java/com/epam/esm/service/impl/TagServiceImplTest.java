@@ -56,9 +56,9 @@ public class TagServiceImplTest {
 
     @Test
     public void deleteTest() {
-        when(tagService.delete(anyInt())).thenReturn(1);
-        int affectedObjects = tagService.delete(1);
-        Assertions.assertNotEquals(affectedObjects, 0);
+        when(tagService.delete(anyInt())).thenReturn(tagDto);
+        TagDto actualDto = tagService.delete(1);
+        Assertions.assertNotEquals(actualDto.getId(), 0);
     }
 
 }

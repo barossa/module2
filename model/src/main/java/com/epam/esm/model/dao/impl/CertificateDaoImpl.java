@@ -13,7 +13,7 @@ import com.epam.esm.model.util.CertificateTagsPropertyCombiner;
 import com.epam.esm.model.util.DeleteCertificateTagBatchSetterImpl;
 import com.epam.esm.model.util.InsertCertificateTagBatchSetterImpl;
 import com.epam.esm.model.util.PropertyCombiner;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -29,6 +29,7 @@ import static com.epam.esm.model.dao.ColumnName.*;
 import static com.epam.esm.model.dao.TableName.*;
 
 @Component
+@RequiredArgsConstructor
 public class CertificateDaoImpl implements CertificateDao {
     private static final String INSERT_CERTIFICATES_TAG = "INSERT INTO " + CERTIFICATE_TAGS + " (" + getColumnName(CERTIFICATE_TAGS_CERTIFICATE_ID) + "," + getColumnName(CERTIFICATE_TAGS_TAG_ID) + ") VALUES(?,?);";
 
@@ -65,14 +66,6 @@ public class CertificateDaoImpl implements CertificateDao {
     private final JdbcTemplate jdbcTemplate;
     private final TagDao tagDao;
     private final PropertyCombiner<CertificateData> propertyCombiner;
-
-    @Autowired
-    public CertificateDaoImpl(JdbcTemplate jdbcTemplate, TagDao tagDao, PropertyCombiner<CertificateData> propertyCombiner) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.tagDao = tagDao;
-        this.propertyCombiner = propertyCombiner;
-    }
-
 
     @Override
     public CertificateData find(int id) throws DaoException {
@@ -161,9 +154,9 @@ public class CertificateDaoImpl implements CertificateDao {
     }
 
     @Override
-    public List<CertificateData> findByOptions(List<String> tags, List<String> names, List<String> descriptions, boolean strong) throws DaoException {
+    public List<CertificateData> findByOptions(List<String> tags, List<String> names, List<String> descriptions) throws DaoException {
         try {
-            String query = QueryUtils.buildSelectByOptions(SELECT_CERTIFICATES_NOT_COMPLETED, tags, names, descriptions, strong);
+            String query = QueryUtils.buildSelectByOptions(SELECT_CERTIFICATES_NOT_COMPLETED, tags, names, descriptions, false);
             RowMapper<TagData> tagDataMapper = new TagMapper();
             RowMapper<CertificateData> certificateDataMapper = new CertificateMapper();
             RowMapper<CertificateData> certificateWithTagDataMapper = new CertificateWithTagMapper(certificateDataMapper, tagDataMapper);

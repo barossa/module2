@@ -69,7 +69,7 @@ public class CertificateDaoImplTest {
     @Test
     public void findByOptions() throws DaoException {
         List<String> tags = Collections.singletonList("tag");
-        List<CertificateData> actualData = certificateDao.findByOptions(tags, Collections.emptyList(), Collections.emptyList(), false);
+        List<CertificateData> actualData = certificateDao.findByOptions(tags, Collections.emptyList(), Collections.emptyList());
         Assertions.assertFalse(actualData.isEmpty());
     }
 
