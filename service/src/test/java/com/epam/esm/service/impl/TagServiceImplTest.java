@@ -1,5 +1,6 @@
 package com.epam.esm.service.impl;
 
+import com.epam.esm.service.dto.PageDto;
 import com.epam.esm.service.dto.TagDto;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,8 +43,8 @@ public class TagServiceImplTest {
 
     @Test
     public void findAllTest() {
-        when(tagService.findAll()).thenReturn(tagDtos);
-        List<TagDto> actualTags = tagService.findAll();
+        when(tagService.findAll(any(PageDto.class))).thenReturn(tagDtos);
+        List<TagDto> actualTags = tagService.findAll(new PageDto());
         Assertions.assertEquals(tagDtos, actualTags);
     }
 

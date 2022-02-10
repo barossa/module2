@@ -1,5 +1,6 @@
 package com.epam.esm.model.dao;
 
+import com.epam.esm.model.dto.PageData;
 import com.epam.esm.model.exception.DaoException;
 
 import java.util.List;
@@ -11,5 +12,5 @@ public interface BaseDao<T> {
 
     int delete(int id) throws DaoException;
 
-    List<T> findAll() throws DaoException;
+    List<T> findAll(PageData page) throws DaoException;
 }

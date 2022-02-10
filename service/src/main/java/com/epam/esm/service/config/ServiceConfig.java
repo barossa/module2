@@ -1,6 +1,5 @@
 package com.epam.esm.service.config;
 
-import com.epam.esm.service.validator.ErrorMessageProvider;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

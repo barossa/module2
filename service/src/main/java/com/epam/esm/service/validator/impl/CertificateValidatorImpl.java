@@ -5,8 +5,6 @@ import com.epam.esm.service.dto.TagDto;
 import com.epam.esm.service.validator.CertificateValidator;
 import com.epam.esm.service.validator.ErrorMessageProvider;
 import com.epam.esm.service.validator.TagValidator;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;

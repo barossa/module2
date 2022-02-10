@@ -2,6 +2,7 @@ package com.epam.esm.service.impl;
 
 import com.epam.esm.service.dto.CertificateDto;
 import com.epam.esm.service.dto.Filter;
+import com.epam.esm.service.dto.PageDto;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,8 +49,8 @@ public class CertificateServiceImplTest {
 
     @Test
     public void findAllTest() {
-        when(certificateService.findAll()).thenReturn(certificateDtos);
-        List<CertificateDto> actualCertificates = certificateService.findAll();
+        when(certificateService.findAll(any(PageDto.class))).thenReturn(certificateDtos);
+        List<CertificateDto> actualCertificates = certificateService.findAll(new PageDto());
         Assertions.assertEquals(certificateDtos, actualCertificates);
     }
 
@@ -69,15 +70,15 @@ public class CertificateServiceImplTest {
 
     @Test
     public void updateTest() {
-        when(certificateService.update(any(CertificateDto.class))).thenReturn(1);
-        int affectedObjects = certificateService.update(certificateDto);
-        Assertions.assertNotEquals(affectedObjects, 0);
+        when(certificateService.update(certificateDto)).thenReturn(certificateDto);
+        CertificateDto updated = certificateService.update(certificateDto);
+        Assertions.assertEquals(certificateDto, updated);
     }
 
     @Test
     public void findByFilterTest() {
-        when(certificateService.findByFilter(any(Filter.class))).thenReturn(certificateDtos);
-        List<CertificateDto> actualCertificates = certificateService.findByFilter(filter);
+        when(certificateService.findByFilter(any(Filter.class), any(PageDto.class))).thenReturn(certificateDtos);
+        List<CertificateDto> actualCertificates = certificateService.findByFilter(filter, new PageDto());
         Assertions.assertEquals(certificateDtos, actualCertificates);
     }
 

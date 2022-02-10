@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
+import javax.persistence.EntityManager;
 import javax.sql.DataSource;
 
 @Configuration
@@ -48,13 +49,13 @@ public class TestConfig {
         return new CertificateTagsPropertyCombiner();
     }
 
-    @Bean
-    public TagDao tagDao(JdbcTemplate jdbcTemplate, PropertyCombiner<TagData> propertyCombiner) {
-        return new TagDaoImpl(jdbcTemplate, propertyCombiner);
+    /*@Bean
+    public TagDao tagDao(EntityManager entityManager) {
+        return new TagDaoImpl(entityManager);
     }
 
     @Bean
-    public CertificateDao certificateDao(JdbcTemplate jdbcTemplate, TagDao tagDao, PropertyCombiner<CertificateData> propertyCombiner) {
-        return new CertificateDaoImpl(jdbcTemplate, tagDao, propertyCombiner);
-    }
+    public CertificateDao certificateDao(EntityManager entityManager) {
+        return new CertificateDaoImpl(entityManager);
+    }*/
 }

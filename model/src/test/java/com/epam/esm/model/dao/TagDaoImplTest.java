@@ -1,6 +1,7 @@
 package com.epam.esm.model.dao;
 
 import com.epam.esm.model.config.TestConfig;
+import com.epam.esm.model.dto.PageData;
 import com.epam.esm.model.dto.TagData;
 import com.epam.esm.model.exception.DaoException;
 import org.junit.jupiter.api.Assertions;
@@ -53,7 +54,7 @@ public class TagDaoImplTest {
 
     @Test
     public void findAllTest() throws DaoException {
-        List<TagData> tagsData = tagDao.findAll();
+        List<TagData> tagsData = tagDao.findAll(new PageData());
         Assertions.assertFalse(tagsData.isEmpty());
     }
 
@@ -61,12 +62,6 @@ public class TagDaoImplTest {
     public void findByNameTest() throws DaoException {
         TagData actualTag = tagDao.findByName("inserted-tag");
         Assertions.assertNotNull(actualTag);
-    }
-
-    @Test
-    public void findByCertificateIdTest() throws DaoException {
-        Set<TagData> actualData = tagDao.findByCertificateId(15);
-        Assertions.assertFalse(actualData.isEmpty());
     }
 
     @Test

@@ -1,103 +1,73 @@
 package com.epam.esm.model.dao.impl;
 
-import com.epam.esm.model.dao.QueryUtils;
 import com.epam.esm.model.dao.TagDao;
 import com.epam.esm.model.dto.CertificateData;
+import com.epam.esm.model.dto.PageData;
 import com.epam.esm.model.dto.TagData;
 import com.epam.esm.model.exception.DaoException;
-import com.epam.esm.model.mapper.CertificateMapper;
-import com.epam.esm.model.mapper.TagMapper;
-import com.epam.esm.model.mapper.TagWithCertificateMapper;
-import com.epam.esm.model.util.InsertTagBatchSetterImpl;
-import com.epam.esm.model.util.PropertyCombiner;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import javax.transaction.Transactional;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
-
-import static com.epam.esm.model.dao.ColumnName.*;
-import static com.epam.esm.model.dao.TableName.*;
 
 @Component
 @RequiredArgsConstructor
 public class TagDaoImpl implements TagDao {
-    private static final String INSERT_TAG = "INSERT IGNORE INTO " + TAGS + " (" + getColumnName(TAGS_NAME) + ") VALUES(?);";
+    private static final String FIND_ALL_TAGS_JQL = "SELECT t FROM TagData t";
+    private static final String FIND_BY_NAME_JQL = "SELECT t FROM TagData t WHERE t.name = :name";
+    private static final String DELETE_TAG_BY_ID_JQL = "DELETE FROM TagData t WHERE t.id = :id";
 
-    private static final String SELECT_TAG_BY_ID = "SELECT " + TAGS_ID + "," + TAGS_NAME + " FROM " + TAGS
-            + " WHERE " + TAGS_ID + "=?;";
-
-    private static final String SELECT_ALL_TAGS = "SELECT " + TAGS_ID + "," + TAGS_NAME + "," + CERTIFICATES_ID + "," + CERTIFICATES_NAME + "," + CERTIFICATES_DESCRIPTION + ","
-            + CERTIFICATES_PRICE + "," + CERTIFICATES_DURATION + "," + CERTIFICATES_CREATE_DATE + "," + CERTIFICATES_LAST_UPDATE_DATE
-            + " FROM " + TAGS
-            + " LEFT JOIN " + CERTIFICATE_TAGS + " ON " + CERTIFICATE_TAGS_TAG_ID + "=" + TAGS_ID
-            + " LEFT JOIN " + CERTIFICATES + " ON " + CERTIFICATES_ID + "=" + CERTIFICATE_TAGS_CERTIFICATE_ID + ";";
-
-    private static final String SELECT_TAG_BY_NAME_NOT_COMPLETED = "SELECT " + TAGS_ID + "," + TAGS_NAME + " FROM " + TAGS
-            + " WHERE";
-
-    private static final String SELECT_TAGS_BY_CERTIFICATE_ID = "SELECT " + TAGS_ID + "," + TAGS_NAME
-            + " FROM " + CERTIFICATES
-            + " INNER JOIN " + CERTIFICATE_TAGS + " ON " + CERTIFICATE_TAGS_CERTIFICATE_ID + "=" + CERTIFICATES_ID
-            + " INNER JOIN " + TAGS + " ON " + TAGS_ID + "=" + CERTIFICATE_TAGS_TAG_ID
-            + " WHERE " + CERTIFICATE_TAGS_CERTIFICATE_ID + "=?;";
-
-    private static final String DELETE_TAG_BY_ID = "DELETE FROM " + TAGS + " WHERE " + TAGS_ID + "=?;";
-
-    private final JdbcTemplate jdbcTemplate;
-    private final PropertyCombiner<TagData> tagPropertyCombiner;
+    private final EntityManager entityManager;
 
     @Override
     public TagData find(int id) throws DaoException {
         try {
-            return jdbcTemplate.query(SELECT_TAG_BY_ID, new TagMapper(), id).stream()
-                    .findAny()
-                    .orElse(null);
-        } catch (DataAccessException e) {
-            throw new DaoException("Can't find tag", e);
+            return entityManager.find(TagData.class, id);
+        } catch (Exception e) {
+            throw new DaoException("Can't find tag by id", e);
         }
     }
 
     @Override
-    public TagData save(TagData tag) throws DaoException {
+    public TagData save(TagData tagData) throws DaoException {
         try {
-            SimpleJdbcInsert insert = new SimpleJdbcInsert(jdbcTemplate);
-            insert.withTableName(TAGS)
-                    .usingGeneratedKeyColumns(getColumnName(TAGS_ID));
-
-            Map<String, Object> parameters = new HashMap<>();
-            parameters.put(getColumnName(TAGS_NAME), tag.getName());
-
-            Number generatedKey = insert.executeAndReturnKey(parameters);
-            tag.setId(generatedKey.intValue());
-            return tag;
-        } catch (DataAccessException e) {
-            throw new DaoException("Can't save tag", e);
+            entityManager.persist(tagData);
+            return tagData;
+        } catch (Exception e) {
+            throw new DaoException("Can't save tag to db", e);
         }
     }
 
     @Override
+    @Transactional
     public int delete(int id) throws DaoException {
         try {
-            return jdbcTemplate.update(DELETE_TAG_BY_ID, id);
-        } catch (DataAccessException e) {
-            throw new DaoException("Can't delete tag", e);
+            Query query = entityManager.createQuery(DELETE_TAG_BY_ID_JQL);
+            query.setParameter("id", id);
+            return query.executeUpdate();
+        } catch (Exception e) {
+            throw new DaoException("Can't delete tag from db", e);
         }
     }
 
     @Override
-    public List<TagData> findAll() throws DaoException {
+    public List<TagData> findAll(PageData page) throws DaoException {
         try {
-            RowMapper<TagData> tagMapper = new TagMapper();
-            RowMapper<CertificateData> certificateMapper = new CertificateMapper();
-            List<TagData> tagRows = jdbcTemplate.query(SELECT_ALL_TAGS, new TagWithCertificateMapper(tagMapper, certificateMapper));
-            return tagPropertyCombiner.combine(tagRows);
-        } catch (DataAccessException e) {
+            TypedQuery<TagData> query = entityManager.createQuery(FIND_ALL_TAGS_JQL, TagData.class);
+            query.setFirstResult(page.getOffset());
+            query.setMaxResults(page.getLimit());
+            return query.getResultList();
+        } catch (Exception e) {
             throw new DaoException("Can't find all tags", e);
         }
     }
@@ -105,49 +75,79 @@ public class TagDaoImpl implements TagDao {
     @Override
     public TagData findByName(String name) throws DaoException {
         try {
-            return findTagsByName(Collections.singletonList(name)).stream()
-                    .findFirst()
-                    .orElse(null);
-        } catch (DataAccessException e) {
+            Query query = entityManager.createQuery(FIND_BY_NAME_JQL, TagData.class);
+            query.setParameter("name", name);
+            return (TagData) query.getSingleResult();
+        } catch (Exception e) {
             throw new DaoException("Can't find tag by name", e);
         }
     }
 
     @Override
-    public Set<TagData> findByCertificateId(int id) throws DaoException {
+    public Set<TagData> findByCertificate(CertificateData certificate) throws DaoException {
         try {
-            List<TagData> tags = jdbcTemplate.query(SELECT_TAGS_BY_CERTIFICATE_ID, new TagMapper(), id);
-            return new HashSet<>(tags);
-        } catch (DataAccessException e) {
+            CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+            CriteriaQuery<TagData> selectQuery = builder.createQuery(TagData.class);
+            Root<TagData> root = selectQuery.from(TagData.class);
+            selectQuery.where(builder.isMember(certificate, root.get("certificates")));
+
+            TypedQuery<TagData> query = entityManager.createQuery(selectQuery);
+            return query.getResultStream().collect(Collectors.toSet());
+
+        } catch (Exception e) {
             throw new DaoException("Can't find tag by certificate id", e);
         }
     }
 
     @Override
-    @Transactional
-    public Set<TagData> saveAll(Set<TagData> tags) throws DaoException {
+    public List<TagData> findByNames(List<String> names) throws DaoException {
         try {
-            jdbcTemplate.batchUpdate(INSERT_TAG, new InsertTagBatchSetterImpl(new ArrayList<>(tags)));
-            List<String> tagNames = tags.stream()
-                    .map(TagData::getName)
-                    .collect(Collectors.toList());
-            List<TagData> savedTags = findTagsByName(tagNames);
-            return new HashSet<>(savedTags);
+            CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+            CriteriaQuery<TagData> selectQuery = builder.createQuery(TagData.class);
+            Root<TagData> root = selectQuery.from(TagData.class);
+            selectQuery.where(root.get("name").in(names));
 
-        } catch (DataAccessException e) {
-            throw new DaoException("Can't save all tags", e);
+            TypedQuery<TagData> query = entityManager.createQuery(selectQuery);
+            return query.getResultList();
+
+        } catch (Exception e) {
+            throw new DaoException("Can't find tags by names", e);
         }
     }
 
-    private List<TagData> findTagsByName(List<String> names) throws DaoException {
+    @Override
+    public Set<TagData> saveAll(Set<TagData> tags) throws DaoException {
         try {
-            if (names.isEmpty()) {
-                return new ArrayList<>();
-            }
-            String query = QueryUtils.buildSelectByTagNamesQuery(SELECT_TAG_BY_NAME_NOT_COMPLETED, names);
-            return jdbcTemplate.query(query, new TagMapper());
-        } catch (DataAccessException e) {
-            throw new DaoException("Can't find tags by name", e);
+            CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+            CriteriaQuery<TagData> findExistsQuery = builder.createQuery(TagData.class);
+            Root<TagData> root = findExistsQuery.from(TagData.class);
+            Predicate condition = createCondition(tags, builder, root);
+            findExistsQuery.where(condition);
+
+            List<TagData> existTags = entityManager.createQuery(findExistsQuery).getResultList();
+            List<String> existNames = existTags.stream()
+                    .map(TagData::getName)
+                    .collect(Collectors.toList());
+
+            Set<TagData> savedTags = tags.stream()
+                    .filter(tag -> !existNames.contains(tag.getName()))
+                    .peek(entityManager::persist)
+                    .collect(Collectors.toSet());
+
+            savedTags.addAll(existTags);
+            return savedTags;
+        } catch (Exception e) {
+            throw new DaoException("Can't save all tags to db", e);
         }
+    }
+
+    private Predicate createCondition(Set<TagData> tags,
+                                      CriteriaBuilder criteriaBuilder,
+                                      Root<TagData> root) throws DaoException {
+        return tags.stream()
+                .map(TagData::getName)
+                .map(name -> criteriaBuilder.equal(root.get("name"), name))
+                .reduce(criteriaBuilder::or)
+                .orElseThrow(DaoException::new);
     }
 }

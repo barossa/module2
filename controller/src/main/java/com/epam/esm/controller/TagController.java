@@ -3,6 +3,7 @@ package com.epam.esm.controller;
 import com.epam.esm.controller.dto.EntityMapper;
 import com.epam.esm.controller.dto.Tag;
 import com.epam.esm.service.TagService;
+import com.epam.esm.service.dto.PageDto;
 import com.epam.esm.service.dto.TagDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,8 +27,8 @@ public class TagController {
      * @return the all tag objects
      */
     @GetMapping
-    public ResponseEntity<Object> getAllTags() {
-        List<TagDto> tagsDto = tagService.findAll();
+    public ResponseEntity<Object> getAllTags(PageDto page){
+        List<TagDto> tagsDto = tagService.findAll(page);
         List<Tag> tags = EntityMapper.mapTagsFromDto(tagsDto, Collectors.toList());
         return ResponseEntity.ok(tags);
     }

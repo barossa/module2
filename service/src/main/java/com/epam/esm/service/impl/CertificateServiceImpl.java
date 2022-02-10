@@ -3,6 +3,8 @@ package com.epam.esm.service.impl;
 import com.epam.esm.model.dao.CertificateDao;
 import com.epam.esm.model.dao.TagDao;
 import com.epam.esm.model.dto.CertificateData;
+import com.epam.esm.model.dto.CertificateFilter;
+import com.epam.esm.model.dto.PageData;
 import com.epam.esm.model.dto.TagData;
 import com.epam.esm.model.exception.DaoException;
 import com.epam.esm.model.util.EntityUtils;
@@ -10,14 +12,16 @@ import com.epam.esm.service.CertificateService;
 import com.epam.esm.service.dto.CertificateDto;
 import com.epam.esm.service.dto.DtoMapper;
 import com.epam.esm.service.dto.Filter;
-import com.epam.esm.service.dto.TagDto;
+import com.epam.esm.service.dto.PageDto;
 import com.epam.esm.service.exception.extend.*;
 import com.epam.esm.service.validator.CertificateValidator;
+import com.epam.esm.service.validator.PageValidator;
 import com.epam.esm.service.validator.TagValidator;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -34,8 +38,10 @@ public class CertificateServiceImpl implements CertificateService {
 
     private final CertificateDao certificateDao;
     private final TagDao tagDao;
+
     private final CertificateValidator certificateValidator;
     private final TagValidator tagValidator;
+    private final PageValidator pageValidator;
 
     @Override
     @Transactional
@@ -44,10 +50,9 @@ public class CertificateServiceImpl implements CertificateService {
             validateCertificate(certificate);
             Set<TagData> tagsData = DtoMapper.mapTagsToData(certificate.getTags(), Collectors.toSet());
             Set<TagData> savedTagsData = tagDao.saveAll(tagsData);
-            Set<TagDto> savedTags = DtoMapper.mapTagsFromData(savedTagsData, Collectors.toSet());
-            certificate.setTags(savedTags);
 
             CertificateData certificateData = DtoMapper.mapCertificateToData(certificate);
+            certificateData.setTags(savedTagsData);
             CertificateData savedCertificateData = certificateDao.save(certificateData);
             if (savedCertificateData == null) {
                 logger.warn("Certificate data not presented");
@@ -62,6 +67,7 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
+    @Transactional
     public CertificateDto delete(int id) {
         try {
             CertificateData certificateData = certificateDao.find(id);
@@ -88,8 +94,6 @@ public class CertificateServiceImpl implements CertificateService {
             if (certificateData == null) {
                 throw new ObjectNotFoundException();
             }
-            Set<TagData> tags = tagDao.findByCertificateId(id);
-            certificateData.setTags(tags);
             return DtoMapper.mapCertificateFromData(certificateData);
 
         } catch (DaoException e) {
@@ -99,9 +103,11 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
-    public List<CertificateDto> findAll() {
+    public List<CertificateDto> findAll(PageDto page) {
         try {
-            List<CertificateData> certificatesData = certificateDao.findAll();
+            validatePage(page);
+            PageData pageData = DtoMapper.mapPageToData(page);
+            List<CertificateData> certificatesData = certificateDao.findAll(pageData);
             return DtoMapper.mapCertificatesFromData(certificatesData, Collectors.toList());
 
         } catch (DaoException e) {
@@ -112,25 +118,22 @@ public class CertificateServiceImpl implements CertificateService {
 
     @Override
     @Transactional
-    public int update(CertificateDto certificate) {
+    public CertificateDto update(CertificateDto certificate) {
         try {
             CertificateData oldCertificateData = certificateDao.find(certificate.getId());
             if (oldCertificateData == null) {
                 throw new ObjectNotPresentedForUpdateException();
             }
-
             CertificateData newCertificateData = DtoMapper.mapCertificateToData(certificate);
-            EntityUtils.replaceNullProperties(oldCertificateData, newCertificateData);
-            CertificateDto newCertificateDto = DtoMapper.mapCertificateFromData(newCertificateData);
-            validateCertificate(newCertificateDto);
+            EntityUtils.replaceNotNullProperties(newCertificateData, oldCertificateData);
+            oldCertificateData.setTags(newCertificateData.getTags());
+            validateCertificate(oldCertificateData);
 
-            Set<TagData> tagsData = DtoMapper.mapTagsToData(newCertificateDto.getTags(), Collectors.toSet());
-            Set<TagData> savedTagsData = tagDao.saveAll(tagsData);
-            Set<TagDto> savedTags = DtoMapper.mapTagsFromData(savedTagsData, Collectors.toSet());
-            newCertificateDto.setTags(savedTags);
+            Set<TagData> savedTagsData = tagDao.saveAll(newCertificateData.getTags());
+            oldCertificateData.setTags(savedTagsData);
 
-            CertificateData certificateData = DtoMapper.mapCertificateToData(newCertificateDto);
-            return certificateDao.update(certificateData);
+            CertificateData updatedCertificate = certificateDao.update(oldCertificateData);
+            return DtoMapper.mapCertificateFromData(updatedCertificate);
 
         } catch (DaoException e) {
             logger.error("Can't update certificate", e);
@@ -139,16 +142,32 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
-    public List<CertificateDto> findByFilter(Filter filter) {
+    public List<CertificateDto> findByFilter(Filter filter, PageDto page) {
         try {
             validateFilter(filter);
-            List<CertificateData> certificatesData = certificateDao.findByOptions(filter.getTags(), filter.getNames(), filter.getDescriptions());
-            return DtoMapper.mapCertificatesFromData(certificatesData, Collectors.toList());
+            validatePage(page);
+            List<String> tagNames = filter.getTags();
+            List<TagData> tagsByName = tagDao.findByNames(tagNames);
+            List<CertificateDto> certificatesDto = new ArrayList<>();
+            if (tagNames.size() == tagsByName.size()) {
+                CertificateFilter certificateFilter = DtoMapper.mapFilter(filter);
+                certificateFilter.setTags(tagsByName);
+                PageData pageData = DtoMapper.mapPageToData(page);
+
+                List<CertificateData> certificatesData = certificateDao.findByFilter(certificateFilter, pageData);
+                certificatesDto = DtoMapper.mapCertificatesFromData(certificatesData, Collectors.toList());
+            }
+            return certificatesDto;
 
         } catch (DaoException e) {
-            logger.error("Can't find certificates by queries", e);
+            logger.error("Can't find certificates by filter", e);
             throw new DataAccessException(e);
         }
+    }
+
+    private void validateCertificate(CertificateData data) {
+        CertificateDto dto = DtoMapper.mapCertificateFromData(data);
+        validateCertificate(dto);
     }
 
     private void validateCertificate(CertificateDto certificate) {
@@ -177,6 +196,16 @@ public class CertificateServiceImpl implements CertificateService {
         tagErrors.addAll(descriptionErrors);
         if (!tagErrors.isEmpty()) {
             throw new ObjectValidationException(tagErrors);
+        }
+    }
+
+    private void validatePage(PageDto page) {
+        if (page == null) {
+            page = new PageDto();
+        }
+        List<String> errors = pageValidator.validatePage(page);
+        if (!errors.isEmpty()) {
+            throw new ObjectValidationException(errors);
         }
     }
 

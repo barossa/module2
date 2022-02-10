@@ -4,6 +4,7 @@ import com.epam.esm.service.CertificateService;
 import com.epam.esm.service.CertificateSortUtils;
 import com.epam.esm.service.dto.CertificateDto;
 import com.epam.esm.service.dto.Filter;
+import com.epam.esm.service.dto.PageDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,15 +29,14 @@ public class CertificateController {
      * @param names        the certificate names
      * @param descriptions the certificate descriptions
      * @param mode         the search mode (1 - full match/0 - part of request)
-     * @param sorts        the sort type (NAME,DATE/ASC,DESC | Ex. NAME_ASC, DATE_DESC)
+     * @param sort        the sort type (NAME,DATE/ASC,DESC | Ex. NAME_ASC, DATE_DESC)
      * @return the certificate objects
      */
     @GetMapping
-    public ResponseEntity<Object> searchByOptions(@RequestParam(name = "tag", required = false) List<String> tags,
-                                                  @RequestParam(name = "name", required = false) List<String> names,
-                                                  @RequestParam(name = "description", required = false) List<String> descriptions,
-                                                  @RequestParam(name = "sort", required = false) Set<String> sorts) {
-        List<CertificateDto> certificates = certificateService.findByFilter(new Filter(tags, names, descriptions));
+    public ResponseEntity<Object> searchByOptions(Filter filter,
+                                                  @RequestParam(name = "sort", required = false) Set<String> sorts,
+                                                  PageDto page) {
+        List<CertificateDto> certificates = certificateService.findByFilter(filter, page);
         List<CertificateDto> sortedCertificates = CertificateSortUtils.sort(certificates, sorts);
         return ResponseEntity.ok().body(sortedCertificates);
     }

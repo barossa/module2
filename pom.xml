@@ -5,11 +5,14 @@
     <groupId>com.epam.esm</groupId>
     <artifactId>m2-rest-basics</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <parent>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <groupId>org.springframework.boot</groupId>
+        <version>2.6.3</version>
+    </parent>
 
     <properties>
         <java.version>1.8</java.version>
-        <spring.version>5.3.15</spring.version>
-        <spring.boot.version>2.6.3</spring.boot.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>

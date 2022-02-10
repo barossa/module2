@@ -2,6 +2,9 @@ package com.epam.esm.model.dao;
 
 import com.epam.esm.model.config.TestConfig;
 import com.epam.esm.model.dto.CertificateData;
+import com.epam.esm.model.dto.CertificateFilter;
+import com.epam.esm.model.dto.PageData;
+import com.epam.esm.model.dto.TagData;
 import com.epam.esm.model.exception.DaoException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -48,7 +51,7 @@ public class CertificateDaoImplTest {
 
     @Test
     public void findAllTest() throws DaoException {
-        List<CertificateData> actualData = certificateDao.findAll();
+        List<CertificateData> actualData = certificateDao.findAll(new PageData());
         Assertions.assertFalse(actualData.isEmpty());
     }
 
@@ -56,20 +59,16 @@ public class CertificateDaoImplTest {
     public void updateTest() throws DaoException {
         CertificateData certificateData = certificateDao.find(16);
         certificateData.setName("New name of certificate");
-        int affectedObjects = certificateDao.update(certificateData);
-        Assertions.assertNotEquals(0, affectedObjects);
-    }
-
-    @Test
-    public void findByTagIdTest() throws DaoException {
-        List<CertificateData> actualData = certificateDao.findByTagId(45);
-        Assertions.assertFalse(actualData.isEmpty());
+        CertificateData updated = certificateDao.update(certificateData);
+        Assertions.assertEquals(certificateData, updated);
     }
 
     @Test
     public void findByOptions() throws DaoException {
-        List<String> tags = Collections.singletonList("tag");
-        List<CertificateData> actualData = certificateDao.findByOptions(tags, Collections.emptyList(), Collections.emptyList());
+        TagData tagData = new TagData(49, "another-tag", Collections.emptySet());
+        List<TagData> tags = Collections.singletonList(tagData);
+        CertificateFilter filter = new CertificateFilter(tags, Collections.emptyList(), Collections.emptyList());
+        List<CertificateData> actualData = certificateDao.findByFilter(filter, new PageData());
         Assertions.assertFalse(actualData.isEmpty());
     }
 
