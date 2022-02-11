@@ -2,7 +2,6 @@ package com.epam.esm.model.dto;
 
 import lombok.*;
 import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -12,6 +11,8 @@ import java.util.Set;
 
 import static javax.persistence.CascadeType.MERGE;
 import static javax.persistence.CascadeType.PERSIST;
+import static javax.persistence.FetchType.EAGER;
+import static org.hibernate.annotations.FetchMode.JOIN;
 
 @Getter
 @Setter
@@ -45,8 +46,8 @@ public class CertificateData {
     private LocalDateTime lastUpdateDate;
 
     @ToString.Exclude
-    @ManyToMany(fetch = FetchType.EAGER, cascade = {PERSIST, MERGE})
-    @Fetch(FetchMode.SUBSELECT)
+    @ManyToMany(fetch = EAGER, cascade = {PERSIST, MERGE})
+    @Fetch(JOIN)
     @JoinTable(name = "certificate_tags",
             joinColumns = {@JoinColumn(name = "certificate_id")},
             inverseJoinColumns = {@JoinColumn(name = "tag_id")})

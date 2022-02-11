@@ -11,6 +11,8 @@ import java.util.Set;
 import static javax.persistence.CascadeType.MERGE;
 import static javax.persistence.CascadeType.PERSIST;
 import static javax.persistence.GenerationType.IDENTITY;
+import static org.hibernate.annotations.FetchMode.JOIN;
+import static org.hibernate.annotations.FetchMode.SUBSELECT;
 
 @Getter
 @Setter
@@ -29,7 +31,7 @@ public class TagData {
 
     @ToString.Exclude
     @ManyToMany(cascade = {PERSIST, MERGE})
-    @Fetch(FetchMode.SUBSELECT)
+    @Fetch(JOIN)
     @JoinTable(name = "certificate_tags",
             joinColumns = {@JoinColumn(name = "tag_id")},
             inverseJoinColumns = {@JoinColumn(name = "certificate_id")})

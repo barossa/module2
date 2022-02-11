@@ -117,14 +117,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public OrderDto findUserOrder(int userId, int orderId) {
-        try{
+        try {
             OrderData orderData = orderDao.find(orderId);
-            if(orderData == null || orderData.getUser().getId() != userId){
+            if (orderData == null || orderData.getUser().getId() != userId) {
                 throw new ObjectNotFoundException();
             }
             return DtoMapper.mapOrderFromData(orderData);
 
-        }catch (DaoException e){
+        } catch (DaoException e) {
             logger.error("Can't find user's order by id");
             throw new DataAccessException(e);
         }

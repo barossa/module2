@@ -16,6 +16,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -103,6 +104,9 @@ public class TagDaoImpl implements TagDao {
     @Override
     public List<TagData> findByNames(List<String> names) throws DaoException {
         try {
+            if (names.isEmpty()) {
+                return new ArrayList<>();
+            }
             CriteriaBuilder builder = entityManager.getCriteriaBuilder();
             CriteriaQuery<TagData> selectQuery = builder.createQuery(TagData.class);
             Root<TagData> root = selectQuery.from(TagData.class);

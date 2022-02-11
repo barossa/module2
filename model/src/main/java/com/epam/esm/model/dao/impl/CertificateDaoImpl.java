@@ -92,10 +92,11 @@ public class CertificateDaoImpl implements CertificateDao {
     @Transactional
     public List<CertificateData> findByFilter(CertificateFilter filter, PageData page) throws DaoException {
         try {
-            CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-            CriteriaQuery<CertificateData> optionsQuery = criteriaBuilder.createQuery(CertificateData.class);
-            Root<CertificateData> root = optionsQuery.from(CertificateData.class);
-            Optional<Predicate> predicate = buildOptionsPredicate(criteriaBuilder, root, filter);
+            CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+            CriteriaQuery<CertificateData> optionsQuery = builder.createQuery(CertificateData.class);
+            Root<CertificateData> certificateRoot = optionsQuery.from(CertificateData.class);
+
+            Optional<Predicate> predicate = buildOptionsPredicate(builder, certificateRoot, filter);
             predicate.ifPresent(optionsQuery::where);
 
             TypedQuery<CertificateData> query = entityManager.createQuery(optionsQuery);

@@ -20,9 +20,11 @@ import com.epam.esm.service.validator.TagValidator;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -123,15 +125,18 @@ public class CertificateServiceImpl implements CertificateService {
             if (oldCertificateData == null) {
                 throw new ObjectNotPresentedForUpdateException();
             }
+            //Validating new certificate data
             CertificateData newCertificateData = DtoMapper.mapCertificateToData(certificate);
             EntityUtils.replaceNullProperties(oldCertificateData, newCertificateData);
             validateCertificate(newCertificateData);
 
+            //Merging new certificate data via JPA
             Set<TagData> savedTagsData = tagDao.saveAll(newCertificateData.getTags());
             newCertificateData.setTags(savedTagsData);
+            newCertificateData.setLastUpdateDate(LocalDateTime.now());
+            BeanUtils.copyProperties(newCertificateData, oldCertificateData);
 
-            CertificateData updatedCertificate = certificateDao.update(newCertificateData);
-            return DtoMapper.mapCertificateFromData(updatedCertificate);
+            return DtoMapper.mapCertificateFromData(oldCertificateData);
 
         } catch (DaoException e) {
             logger.error("Can't update certificate", e);
