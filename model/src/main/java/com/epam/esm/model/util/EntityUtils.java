@@ -13,16 +13,16 @@ public final class EntityUtils {
     private EntityUtils() {
     }
 
-    public static String[] getNullPropertyNames(Object source) {
+    public static String[] getNotNullPropertyNames(Object source) {
         final BeanWrapper wrappedSource = new BeanWrapperImpl(source);
         return Stream.of(wrappedSource.getPropertyDescriptors())
                 .map(FeatureDescriptor::getName)
-                .filter(propertyName -> wrappedSource.getPropertyValue(propertyName) == null)
+                .filter(propertyName -> wrappedSource.getPropertyValue(propertyName) != null)
                 .toArray(String[]::new);
     }
 
-    //Copy all not null properties to destination object
-    public static <T> void replaceNotNullProperties(Object source, T dest){
-        BeanUtils.copyProperties(source, dest, getNullPropertyNames(source));
+    //Replace all null properties in dest object
+    public static void replaceNullProperties(Object source, Object dest){
+        BeanUtils.copyProperties(source, dest, getNotNullPropertyNames(dest));
     }
 }

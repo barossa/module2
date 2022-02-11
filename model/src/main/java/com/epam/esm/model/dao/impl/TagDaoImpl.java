@@ -16,6 +16,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.transaction.Transactional;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -118,6 +119,9 @@ public class TagDaoImpl implements TagDao {
     @Override
     public Set<TagData> saveAll(Set<TagData> tags) throws DaoException {
         try {
+            if (tags.isEmpty()) {
+                return new HashSet<>();
+            }
             CriteriaBuilder builder = entityManager.getCriteriaBuilder();
             CriteriaQuery<TagData> findExistsQuery = builder.createQuery(TagData.class);
             Root<TagData> root = findExistsQuery.from(TagData.class);
@@ -142,12 +146,12 @@ public class TagDaoImpl implements TagDao {
     }
 
     private Predicate createCondition(Set<TagData> tags,
-                                      CriteriaBuilder criteriaBuilder,
+                                      CriteriaBuilder builder,
                                       Root<TagData> root) throws DaoException {
         return tags.stream()
                 .map(TagData::getName)
-                .map(name -> criteriaBuilder.equal(root.get("name"), name))
-                .reduce(criteriaBuilder::or)
+                .map(name -> builder.equal(root.get("name"), name))
+                .reduce(builder::or)
                 .orElseThrow(DaoException::new);
     }
 }

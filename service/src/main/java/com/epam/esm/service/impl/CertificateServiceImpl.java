@@ -21,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -125,14 +124,13 @@ public class CertificateServiceImpl implements CertificateService {
                 throw new ObjectNotPresentedForUpdateException();
             }
             CertificateData newCertificateData = DtoMapper.mapCertificateToData(certificate);
-            EntityUtils.replaceNotNullProperties(newCertificateData, oldCertificateData);
-            oldCertificateData.setTags(newCertificateData.getTags());
-            validateCertificate(oldCertificateData);
+            EntityUtils.replaceNullProperties(oldCertificateData, newCertificateData);
+            validateCertificate(newCertificateData);
 
             Set<TagData> savedTagsData = tagDao.saveAll(newCertificateData.getTags());
-            oldCertificateData.setTags(savedTagsData);
+            newCertificateData.setTags(savedTagsData);
 
-            CertificateData updatedCertificate = certificateDao.update(oldCertificateData);
+            CertificateData updatedCertificate = certificateDao.update(newCertificateData);
             return DtoMapper.mapCertificateFromData(updatedCertificate);
 
         } catch (DaoException e) {

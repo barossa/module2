@@ -36,7 +36,7 @@ public final class DtoMapper {
     public static CertificateData mapCertificateToData(CertificateDto dto) {
         CertificateData data = Utils.mapCertificateToData(dto);
         Set<TagDto> tagsDto = dto.getTags();
-        Set<TagData> tagsData = new HashSet<>();
+        Set<TagData> tagsData = null;
         if (tagsDto != null) {
             tagsData = tagsDto.stream()
                     .map(Utils::mapTagToData)
@@ -84,7 +84,7 @@ public final class DtoMapper {
         return data;
     }
 
-    public static OrderDto mapOrderFromData(OrderData data){
+    public static OrderDto mapOrderFromData(OrderData data) {
         OrderDto orderDto = new OrderDto();
         BeanUtils.copyProperties(data, orderDto);
         UserDto userDto = DtoMapper.mapUserFromData(data.getUser());
@@ -94,7 +94,7 @@ public final class DtoMapper {
         return orderDto;
     }
 
-    public static PageData mapPageToData(PageDto dto){
+    public static PageData mapPageToData(PageDto dto) {
         return new PageData(dto.getPage() * dto.getLimit(), dto.getLimit());
     }
 
