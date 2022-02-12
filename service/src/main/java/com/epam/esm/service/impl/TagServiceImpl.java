@@ -33,7 +33,7 @@ public class TagServiceImpl implements TagService {
         try {
             TagData tagData = tagDao.find(id);
             if (tagData == null) {
-                throw new ObjectNotFoundException();
+                throw new TagNotFoundException();
             }
             return DtoMapper.mapTagFromData(tagData);
         } catch (DaoException e) {

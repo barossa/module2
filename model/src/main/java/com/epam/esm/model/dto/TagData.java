@@ -2,7 +2,6 @@ package com.epam.esm.model.dto;
 
 import lombok.*;
 import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -12,7 +11,6 @@ import static javax.persistence.CascadeType.MERGE;
 import static javax.persistence.CascadeType.PERSIST;
 import static javax.persistence.GenerationType.IDENTITY;
 import static org.hibernate.annotations.FetchMode.JOIN;
-import static org.hibernate.annotations.FetchMode.SUBSELECT;
 
 @Getter
 @Setter

@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService {
         try {
             UserData userData = userDao.find(id);
             if (userData == null) {
-                throw new ObjectNotFoundException();
+                throw new UserNotFoundException();
             }
             return DtoMapper.mapUserFromData(userData);
         } catch (DaoException e) {
@@ -103,7 +103,7 @@ public class UserServiceImpl implements UserService {
             validatePage(page);
             UserData userData = userDao.find(userId);
             if (userData == null) {
-                throw new ObjectNotFoundException();
+                throw new UserNotFoundException();
             }
             PageData pageData = DtoMapper.mapPageToData(page);
             List<OrderData> userOrdersData = orderDao.findByUser(userData, pageData);
@@ -120,7 +120,7 @@ public class UserServiceImpl implements UserService {
         try {
             OrderData orderData = orderDao.find(orderId);
             if (orderData == null || orderData.getUser().getId() != userId) {
-                throw new ObjectNotFoundException();
+                throw new OrderNotFoundException();
             }
             return DtoMapper.mapOrderFromData(orderData);
 

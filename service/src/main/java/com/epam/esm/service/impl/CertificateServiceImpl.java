@@ -93,7 +93,7 @@ public class CertificateServiceImpl implements CertificateService {
         try {
             CertificateData certificateData = certificateDao.find(id);
             if (certificateData == null) {
-                throw new ObjectNotFoundException();
+                throw new CertificateNotFoundException();
             }
             return DtoMapper.mapCertificateFromData(certificateData);
 

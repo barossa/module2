@@ -6,11 +6,11 @@ import com.epam.esm.model.dto.UserData;
 import com.epam.esm.model.exception.DaoException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
-import javax.transaction.Transactional;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -32,6 +32,7 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
+    @Transactional
     public UserData save(UserData userData) throws DaoException {
         try {
             entityManager.persist(userData);

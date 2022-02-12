@@ -54,12 +54,16 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
         exceptions.put(EmptySearchRequestException.class, EMPTY_SEARCH_REQUEST);
         exceptions.put(LongSearchRequestException.class, LONG_SEARCH_REQUEST);
         exceptions.put(ObjectAlreadyExistsException.class, OBJECT_ALREADY_EXISTS);
-        exceptions.put(ObjectNotFoundException.class, OBJECT_NOT_FOUND);
         exceptions.put(ObjectNotPresentedForUpdateException.class, OBJECT_NOT_PRESENTED_FOR_UPDATE);
         exceptions.put(ObjectPostingException.class, OBJECT_POSTING_ERROR);
         exceptions.put(InvalidSortParametersException.class, INVALID_SORT_PARAMETERS);
         exceptions.put(ObjectNotPresentedForDelete.class, OBJECT_NOT_PRESENTED_FOR_DELETE);
         exceptions.put(ObjectDeletionException.class, OBJECT_DELETION_ERROR);
+
+        exceptions.put(TagNotFoundException.class, TAG_NOT_FOUND);
+        exceptions.put(CertificateNotFoundException.class, CERTIFICATE_NOT_FOUND);
+        exceptions.put(UserNotFoundException.class, USER_NOT_FOUND);
+        exceptions.put(OrderNotFoundException.class, ORDER_NOT_FOUND);
     }
 
     private final ErrorResponseBuilder responseBuilder;
