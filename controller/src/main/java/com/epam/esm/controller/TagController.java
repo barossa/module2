@@ -46,6 +46,20 @@ public class TagController {
         return ResponseEntity.ok(tag);
     }
 
+    @GetMapping(value = "/top-of-user/{id:^[0-9]+$}")
+    public ResponseEntity<Object> getTopTagOfUser(@PathVariable int id) {
+        TagDto tagDto = tagService.findMostUsedOfUser(id);
+        Tag tag = EntityMapper.mapTagFromDto(tagDto);
+        return ResponseEntity.ok(tag);
+    }
+
+    @GetMapping(value = "/top-of-top-user")
+    public ResponseEntity<Object> getTopTagOfTopUser() {
+        TagDto tagDto = tagService.findMostUsedOfTopUser();
+        Tag tag = EntityMapper.mapTagFromDto(tagDto);
+        return ResponseEntity.ok(tag);
+    }
+
     /**
      * Add tag object.
      *

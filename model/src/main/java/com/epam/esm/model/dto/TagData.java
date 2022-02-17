@@ -29,7 +29,6 @@ public class TagData {
 
     @ToString.Exclude
     @ManyToMany(cascade = {PERSIST, MERGE})
-    @Fetch(JOIN)
     @JoinTable(name = "certificate_tags",
             joinColumns = {@JoinColumn(name = "tag_id")},
             inverseJoinColumns = {@JoinColumn(name = "certificate_id")})

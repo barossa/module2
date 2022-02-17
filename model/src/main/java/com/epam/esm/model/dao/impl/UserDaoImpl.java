@@ -1,6 +1,7 @@
 package com.epam.esm.model.dao.impl;
 
 import com.epam.esm.model.dao.UserDao;
+import com.epam.esm.model.dto.OrderData;
 import com.epam.esm.model.dto.PageData;
 import com.epam.esm.model.dto.UserData;
 import com.epam.esm.model.exception.DaoException;
@@ -11,6 +12,11 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import javax.persistence.criteria.Subquery;
+import java.math.BigDecimal;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -76,6 +82,33 @@ public class UserDaoImpl implements UserDao {
             return query.getSingleResult();
         } catch (Exception e) {
             throw new DaoException("Can't find user by name", e);
+        }
+    }
+
+    @Override
+    public UserData findTopUser() throws DaoException {
+        try {
+            CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+
+            CriteriaQuery<UserData> userQuery = builder.createQuery(UserData.class);
+            Root<OrderData> orderRoot = userQuery.from(OrderData.class);
+            userQuery.select(orderRoot.get("user"));
+
+            Subquery<BigDecimal> sumQuery = userQuery.subquery(BigDecimal.class);
+            Root<OrderData> sumRoot = sumQuery.from(OrderData.class);
+            sumQuery.select(builder.sum(sumRoot.get("cost")))
+                    .groupBy(sumRoot.get("user"));
+
+            userQuery.groupBy(orderRoot.get("user"))
+                    .having(builder.ge(builder.sum(orderRoot.get("cost")), builder.all(sumQuery)));
+
+            List<UserData> resultList = entityManager.createQuery(userQuery).getResultList();
+            return resultList.stream()
+                    .findFirst()
+                    .orElse(null);
+
+        } catch (Exception e) {
+            throw new DaoException("Can't find top user", e);
         }
     }
 }

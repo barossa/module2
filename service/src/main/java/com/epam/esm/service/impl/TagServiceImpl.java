@@ -1,8 +1,10 @@
 package com.epam.esm.service.impl;
 
 import com.epam.esm.model.dao.TagDao;
+import com.epam.esm.model.dao.UserDao;
 import com.epam.esm.model.dto.PageData;
 import com.epam.esm.model.dto.TagData;
+import com.epam.esm.model.dto.UserData;
 import com.epam.esm.model.exception.DaoException;
 import com.epam.esm.service.TagService;
 import com.epam.esm.service.dto.DtoMapper;
@@ -25,6 +27,7 @@ public class TagServiceImpl implements TagService {
     private static final Logger logger = LogManager.getLogger(TagServiceImpl.class);
 
     private final TagDao tagDao;
+    private final UserDao userDao;
     private final TagValidator tagValidator;
     private final PageValidator pageValidator;
 
@@ -109,6 +112,41 @@ public class TagServiceImpl implements TagService {
         List<String> errors = pageValidator.validatePage(page);
         if (!errors.isEmpty()) {
             throw new ObjectValidationException(errors);
+        }
+    }
+
+    @Override
+    public TagDto findMostUsedOfUser(int userId) {
+        try {
+            UserData userData = userDao.find(userId);
+            if (userData == null) {
+                throw new UserNotFoundException();
+            }
+            TagData tagData = tagDao.findMostUsedOfUser(userData);
+            if (tagData == null) {
+                throw new TagNotFoundException();
+            }
+
+            return DtoMapper.mapTagFromData(tagData);
+
+        } catch (DaoException e) {
+            logger.error("Can't find most used tag of user by id", e);
+            throw new DataAccessException(e);
+        }
+    }
+
+    @Override
+    public TagDto findMostUsedOfTopUser() {
+        try {
+            TagData tagData = tagDao.findMostUsedOfTopUser();
+            if (tagData == null) {
+                throw new TagNotFoundException();
+            }
+            return DtoMapper.mapTagFromData(tagData);
+
+        } catch (DaoException e) {
+            logger.error("Can't find most used tag of top user", e);
+            throw new DataAccessException(e);
         }
     }
 }

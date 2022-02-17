@@ -145,6 +145,7 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
+    @Transactional()
     public List<CertificateDto> findByFilter(Filter filter, PageDto page) {
         try {
             validateFilter(filter);

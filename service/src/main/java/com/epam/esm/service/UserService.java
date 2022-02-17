@@ -9,4 +9,6 @@ import java.util.List;
 public interface UserService extends BaseService<UserDto>{
     List<OrderDto> findUserOrders(int userId, PageDto page);
     OrderDto findUserOrder(int userId, int orderId);
+    OrderDto makeOrder(int userId, int certificateId);
+    UserDto findTopUser();
 }

@@ -1,9 +1,7 @@
 package com.epam.esm.model.dao.impl;
 
 import com.epam.esm.model.dao.TagDao;
-import com.epam.esm.model.dto.CertificateData;
-import com.epam.esm.model.dto.PageData;
-import com.epam.esm.model.dto.TagData;
+import com.epam.esm.model.dto.*;
 import com.epam.esm.model.exception.DaoException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -12,10 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -148,6 +144,87 @@ public class TagDaoImpl implements TagDao {
         } catch (Exception e) {
             throw new DaoException("Can't save all tags to db", e);
         }
+    }
+
+    @Override
+    public TagData findMostUsedOfUser(UserData user) throws DaoException {
+        try {
+            CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+
+            CriteriaQuery<TagData> tagQuery = builder.createQuery(TagData.class);
+            Root<OrderData> orderRoot = tagQuery.from(OrderData.class);
+            Join<OrderData, TagData> orderTagName = orderRoot.join(OrderData_.CERTIFICATE)
+                    .join(CertificateData_.TAGS);
+
+            Subquery<Long> countQuery = tagQuery.subquery(Long.class);
+            Root<OrderData> countRoot = countQuery.from(OrderData.class);
+            Join<OrderData, TagData> countTagJoin = countRoot.join(OrderData_.CERTIFICATE)
+                    .join(CertificateData_.TAGS);
+
+            countQuery.select(builder.count(countTagJoin))
+                    .where(builder.equal(countRoot.get("user"), user))
+                    .groupBy(countTagJoin);
+
+            tagQuery.select(orderTagName)
+                    .where(builder.equal(orderRoot.get("user"), user))
+                    .groupBy(orderTagName)
+                    .having(builder.ge(builder.count(orderTagName), builder.all(countQuery)));
+
+            List<TagData> resultList = entityManager.createQuery(tagQuery).getResultList();
+            return resultList.stream()
+                    .findFirst()
+                    .orElse(null);
+
+        } catch (Exception e) {
+            throw new DaoException("Can't find most used tag of user", e);
+        }
+    }
+
+    @Override
+    public TagData findMostUsedOfTopUser() throws DaoException {
+        try {
+            CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+
+            CriteriaQuery<TagData> tagQuery = builder.createQuery(TagData.class);
+            Root<OrderData> tagRoot = tagQuery.from(OrderData.class);
+            Join<OrderData, TagData> orderTagName = tagRoot.join(OrderData_.CERTIFICATE)
+                    .join(CertificateData_.TAGS);
+
+            Subquery<UserData> userQuery = tagQuery.subquery(UserData.class);
+            Root<OrderData> userRoot = userQuery.from(OrderData.class);
+
+            Subquery<BigDecimal> sumQuery = userQuery.subquery(BigDecimal.class);
+            Root<OrderData> sumRoot = sumQuery.from(OrderData.class);
+            sumQuery.select(builder.sum(sumRoot.get("cost")))
+                    .groupBy(sumRoot.get("user"));
+
+            userQuery.select(userRoot.get("user"))
+                    .groupBy(userRoot.get("user"))
+                    .having(builder.ge(builder.sum(userRoot.get("cost")), builder.all(sumQuery)));
+
+            Subquery<Long> countQuery = tagQuery.subquery(Long.class);
+            Root<OrderData> countRoot = countQuery.from(OrderData.class);
+            Join<OrderData, TagData> countTagJoin = countRoot.join(OrderData_.CERTIFICATE)
+                    .join(CertificateData_.TAGS);
+
+            countQuery.select(builder.count(countTagJoin))
+                    .where(builder.in(countRoot.get("user")).value(userQuery))
+                    .groupBy(countTagJoin);
+
+            tagQuery.select(orderTagName)
+                    .where(builder.in(tagRoot.get("user")).value(userQuery))
+                    .groupBy(orderTagName)
+                    .having(builder.ge(builder.count(orderTagName), builder.all(countQuery)));
+
+            List<TagData> resultList = entityManager.createQuery(tagQuery).getResultList();
+            return resultList.stream()
+                    .findFirst()
+                    .orElse(null);
+
+        } catch (Exception e) {
+            throw new DaoException("Can't find most used tag of top user", e);
+        }
+
     }
 
     private Predicate createCondition(Set<TagData> tags,

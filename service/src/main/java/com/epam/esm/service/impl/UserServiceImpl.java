@@ -1,7 +1,9 @@
 package com.epam.esm.service.impl;
 
+import com.epam.esm.model.dao.CertificateDao;
 import com.epam.esm.model.dao.OrderDao;
 import com.epam.esm.model.dao.UserDao;
+import com.epam.esm.model.dto.CertificateData;
 import com.epam.esm.model.dto.OrderData;
 import com.epam.esm.model.dto.PageData;
 import com.epam.esm.model.dto.UserData;
@@ -12,15 +14,20 @@ import com.epam.esm.service.dto.OrderDto;
 import com.epam.esm.service.dto.PageDto;
 import com.epam.esm.service.dto.UserDto;
 import com.epam.esm.service.exception.extend.*;
+import com.epam.esm.service.validator.IdValidator;
 import com.epam.esm.service.validator.PageValidator;
 import com.epam.esm.service.validator.UserValidator;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.epam.esm.model.util.EntityUtils.UNDEFINED_ID;
 
 @RequiredArgsConstructor
 @Service
@@ -29,9 +36,11 @@ public class UserServiceImpl implements UserService {
 
     private final UserDao userDao;
     private final OrderDao orderDao;
+    private final CertificateDao certificateDao;
 
     private final UserValidator userValidator;
     private final PageValidator pageValidator;
+    private final IdValidator idValidator;
 
     @Override
     public UserDto find(int id) {
@@ -125,8 +134,51 @@ public class UserServiceImpl implements UserService {
             return DtoMapper.mapOrderFromData(orderData);
 
         } catch (DaoException e) {
-            logger.error("Can't find user's order by id");
+            logger.error("Can't find user's order by id", e);
             throw new DataAccessException(e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public OrderDto makeOrder(int userId, int certificateId) {
+        try {
+            List<String> errors = idValidator.validateId(certificateId);
+            if (!errors.isEmpty()) {
+                throw new ObjectValidationException(errors);
+            }
+
+            UserData userData = userDao.find(userId);
+            if (userData == null) {
+                throw new UserNotFoundException();
+            }
+            CertificateData certificateData = certificateDao.find(certificateId);
+            if (certificateData == null) {
+                throw new CertificateNotFoundException();
+            }
+            OrderData orderData = new OrderData(UNDEFINED_ID,
+                    LocalDateTime.now(),
+                    certificateData.getPrice(),
+                    userData,
+                    certificateData);
+            orderDao.save(orderData);
+            return DtoMapper.mapOrderFromData(orderData);
+
+        } catch (DaoException e) {
+            logger.error("Can't made order", e);
+            throw new DataAccessException(e);
+        }
+    }
+
+    @Override
+    public UserDto findTopUser() {
+        try{
+            UserData userData = userDao.findTopUser();
+            return DtoMapper.mapUserFromData(userData);
+
+        }catch (DaoException e){
+            logger.error("Cant find top user", e);
+            throw new DataAccessException();
         }
     }
 

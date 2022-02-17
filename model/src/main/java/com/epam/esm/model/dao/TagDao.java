@@ -2,6 +2,7 @@ package com.epam.esm.model.dao;
 
 import com.epam.esm.model.dto.CertificateData;
 import com.epam.esm.model.dto.TagData;
+import com.epam.esm.model.dto.UserData;
 import com.epam.esm.model.exception.DaoException;
 
 import java.util.List;
@@ -15,4 +16,8 @@ public interface TagDao extends BaseDao<TagData> {
     List<TagData> findByNames(List<String> names) throws DaoException;
 
     Set<TagData> saveAll(Set<TagData> tags) throws DaoException;
+
+    TagData findMostUsedOfUser(UserData user) throws DaoException;
+
+    TagData findMostUsedOfTopUser() throws DaoException;
 }

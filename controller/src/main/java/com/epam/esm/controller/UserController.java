@@ -1,5 +1,7 @@
 package com.epam.esm.controller;
 
+import com.epam.esm.controller.dto.EntityMapper;
+import com.epam.esm.controller.dto.Order;
 import com.epam.esm.service.UserService;
 import com.epam.esm.service.dto.OrderDto;
 import com.epam.esm.service.dto.PageDto;
@@ -9,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users")
@@ -33,14 +35,30 @@ public class UserController {
     @GetMapping("/{id:^[0-9]+$}/orders")
     public ResponseEntity<Object> findUserOrders(@PathVariable int id,
                                                  PageDto page) {
-        List<OrderDto> userOrders = userService.findUserOrders(id, page);
-        return ResponseEntity.ok().body(userOrders);
+        List<OrderDto> userOrdersDto = userService.findUserOrders(id, page);
+        List<Order> orders = EntityMapper.mapOrdersFromDto(userOrdersDto, Collectors.toList());
+        return ResponseEntity.ok(orders);
     }
 
-    @GetMapping("/{userId:^[0-9]+$}/orders/{orderId}")
+    @GetMapping("/{userId:^[0-9]+$}/orders/{orderId:^[0-9]+$}")
     public ResponseEntity<Object> findUsersOrderById(@PathVariable int userId,
-                                                 @PathVariable int orderId) {
-        OrderDto userOrder = userService.findUserOrder(userId, orderId);
-        return ResponseEntity.ok().body(userOrder);
+                                                     @PathVariable int orderId) {
+        OrderDto userOrderDto = userService.findUserOrder(userId, orderId);
+        Order order = EntityMapper.mapOrderFromDto(userOrderDto);
+        return ResponseEntity.ok(order);
+    }
+
+    @GetMapping("/top")
+    public ResponseEntity<Object> findTopUser() {
+        UserDto userDto = userService.findTopUser();
+        return ResponseEntity.ok(userDto);
+    }
+
+    @PostMapping("/{userId:^[0-9]+$}/orders")
+    public ResponseEntity<Object> makeOrder(@PathVariable int userId,
+                                            @RequestParam(defaultValue = "0") int certificateId) {
+        OrderDto orderDto = userService.makeOrder(userId, certificateId);
+        Order order = EntityMapper.mapOrderFromDto(orderDto);
+        return ResponseEntity.ok().body(order);
     }
 }
