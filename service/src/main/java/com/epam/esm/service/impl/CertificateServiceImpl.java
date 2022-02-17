@@ -2,10 +2,7 @@ package com.epam.esm.service.impl;
 
 import com.epam.esm.model.dao.CertificateDao;
 import com.epam.esm.model.dao.TagDao;
-import com.epam.esm.model.dto.CertificateData;
-import com.epam.esm.model.dto.CertificateFilter;
-import com.epam.esm.model.dto.PageData;
-import com.epam.esm.model.dto.TagData;
+import com.epam.esm.model.dto.*;
 import com.epam.esm.model.exception.DaoException;
 import com.epam.esm.model.util.EntityUtils;
 import com.epam.esm.service.CertificateService;
@@ -25,10 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
@@ -36,6 +30,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CertificateServiceImpl implements CertificateService {
     private static final Logger logger = LogManager.getLogger(CertificateServiceImpl.class);
+
+    private static final int MAX_SORTS = 2;
 
     private final CertificateDao certificateDao;
     private final TagDao tagDao;
@@ -146,10 +142,11 @@ public class CertificateServiceImpl implements CertificateService {
 
     @Override
     @Transactional()
-    public List<CertificateDto> findByFilter(Filter filter, PageDto page) {
+    public List<CertificateDto> findByFilter(Filter filter, PageDto page, Set<String> sorts) {
         try {
             validateFilter(filter);
             validatePage(page);
+            Set<CertificateSort> validateSorts = validateSorts(sorts);
             List<String> tagNames = filter.getTags();
             List<TagData> tagsByName = tagDao.findByNames(tagNames);
             List<CertificateDto> certificatesDto = new ArrayList<>();
@@ -158,7 +155,7 @@ public class CertificateServiceImpl implements CertificateService {
                 certificateFilter.setTags(tagsByName);
                 PageData pageData = DtoMapper.mapPageToData(page);
 
-                List<CertificateData> certificatesData = certificateDao.findByFilter(certificateFilter, pageData);
+                List<CertificateData> certificatesData = certificateDao.findByFilter(certificateFilter, pageData, validateSorts);
                 certificatesDto = DtoMapper.mapCertificatesFromData(certificatesData, Collectors.toList());
             }
             return certificatesDto;
@@ -222,6 +219,24 @@ public class CertificateServiceImpl implements CertificateService {
         }
         if (filter.getDescriptions() == null) {
             filter.setDescriptions(Collections.emptyList());
+        }
+    }
+
+    private Set<CertificateSort> validateSorts(Set<String> sorts) {
+        if (sorts == null) {
+            sorts = new HashSet<>();
+        }
+        if (sorts.size() > MAX_SORTS) {
+            throw new InvalidSortParametersException();
+        }
+        try {
+            return sorts.stream()
+                    .map(String::toUpperCase)
+                    .map(CertificateSort::valueOf)
+                    .collect(Collectors.toSet());
+
+        } catch (IllegalArgumentException e) {
+            throw new InvalidSortParametersException(e);
         }
     }
 }

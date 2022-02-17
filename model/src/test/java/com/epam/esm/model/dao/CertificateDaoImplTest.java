@@ -1,10 +1,7 @@
 package com.epam.esm.model.dao;
 
 import com.epam.esm.model.config.TestConfig;
-import com.epam.esm.model.dto.CertificateData;
-import com.epam.esm.model.dto.CertificateFilter;
-import com.epam.esm.model.dto.PageData;
-import com.epam.esm.model.dto.TagData;
+import com.epam.esm.model.dto.*;
 import com.epam.esm.model.exception.DaoException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -17,7 +14,9 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static com.epam.esm.model.util.EntityUtils.UNDEFINED_ID;
 
@@ -68,7 +67,8 @@ public class CertificateDaoImplTest {
         TagData tagData = new TagData(49, "another-tag", Collections.emptySet());
         List<TagData> tags = Collections.singletonList(tagData);
         CertificateFilter filter = new CertificateFilter(tags, Collections.emptyList(), Collections.emptyList());
-        List<CertificateData> actualData = certificateDao.findByFilter(filter, new PageData());
+        Set<CertificateSort> sorts = new HashSet<>();
+        List<CertificateData> actualData = certificateDao.findByFilter(filter, new PageData(), sorts);
         Assertions.assertFalse(actualData.isEmpty());
     }
 

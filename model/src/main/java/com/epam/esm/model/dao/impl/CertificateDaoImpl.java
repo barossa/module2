@@ -3,6 +3,7 @@ package com.epam.esm.model.dao.impl;
 import com.epam.esm.model.dao.CertificateDao;
 import com.epam.esm.model.dto.CertificateData;
 import com.epam.esm.model.dto.CertificateFilter;
+import com.epam.esm.model.dto.CertificateSort;
 import com.epam.esm.model.dto.PageData;
 import com.epam.esm.model.exception.DaoException;
 import lombok.RequiredArgsConstructor;
@@ -11,14 +12,14 @@ import org.springframework.stereotype.Component;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Component
@@ -90,16 +91,18 @@ public class CertificateDaoImpl implements CertificateDao {
 
     @Override
     @Transactional
-    public List<CertificateData> findByFilter(CertificateFilter filter, PageData page) throws DaoException {
+    public List<CertificateData> findByFilter(CertificateFilter filter, PageData page, Set<CertificateSort> sorts) throws DaoException {
         try {
             CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-            CriteriaQuery<CertificateData> optionsQuery = builder.createQuery(CertificateData.class);
-            Root<CertificateData> certificateRoot = optionsQuery.from(CertificateData.class);
+            CriteriaQuery<CertificateData> filterQuery = builder.createQuery(CertificateData.class);
+            Root<CertificateData> root = filterQuery.from(CertificateData.class);
 
-            Optional<Predicate> predicate = buildOptionsPredicate(builder, certificateRoot, filter);
-            predicate.ifPresent(optionsQuery::where);
+            Optional<Predicate> predicate = buildOptionsPredicate(builder, root, filter);
+            predicate.ifPresent(filterQuery::where);
+            List<Order> orders = buildSorts(sorts, builder, root);
+            filterQuery.orderBy(orders);
 
-            TypedQuery<CertificateData> query = entityManager.createQuery(optionsQuery);
+            TypedQuery<CertificateData> query = entityManager.createQuery(filterQuery);
             query.setFirstResult(page.getOffset());
             query.setMaxResults(page.getLimit());
             return query.getResultList();
@@ -126,5 +129,19 @@ public class CertificateDaoImpl implements CertificateDao {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .reduce(builder::and);
+    }
+
+
+    private List<Order> buildSorts(Set<CertificateSort> sorts,
+                                   CriteriaBuilder builder,
+                                   Root<CertificateData> root) {
+        Function<CertificateSort, Order> converter = s -> {
+            Path<Object> field = root.get(s.getFieldName());
+            return s.isAscending() ? builder.asc(field) : builder.desc(field);
+        };
+
+        return sorts.stream()
+                .map(converter)
+                .collect(Collectors.toList());
     }
 }

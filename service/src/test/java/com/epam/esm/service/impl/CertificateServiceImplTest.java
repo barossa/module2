@@ -13,9 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -77,8 +75,9 @@ public class CertificateServiceImplTest {
 
     @Test
     public void findByFilterTest() {
-        when(certificateService.findByFilter(any(Filter.class), any(PageDto.class))).thenReturn(certificateDtos);
-        List<CertificateDto> actualCertificates = certificateService.findByFilter(filter, new PageDto());
+        when(certificateService.findByFilter(any(Filter.class), any(PageDto.class), any(Set.class))).thenReturn(certificateDtos);
+        Set<String> sorts = new HashSet<>();
+        List<CertificateDto> actualCertificates = certificateService.findByFilter(filter, new PageDto(), sorts);
         Assertions.assertEquals(certificateDtos, actualCertificates);
     }
 
