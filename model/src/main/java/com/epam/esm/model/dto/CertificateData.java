@@ -76,4 +76,16 @@ public class CertificateData {
         result = 31 * result + (lastUpdateDate != null ? lastUpdateDate.hashCode() : 0);
         return result;
     }
+
+    @PrePersist
+    private void onPersist(){
+        LocalDateTime now = LocalDateTime.now();
+        this.createDate = now;
+        this.lastUpdateDate = now;
+    }
+
+    @PreUpdate
+    private void onUpdate(){
+        this.lastUpdateDate = LocalDateTime.now();
+    }
 }

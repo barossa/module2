@@ -129,7 +129,6 @@ public class CertificateServiceImpl implements CertificateService {
             //Merging new certificate data via JPA
             Set<TagData> savedTagsData = tagDao.saveAll(newCertificateData.getTags());
             newCertificateData.setTags(savedTagsData);
-            newCertificateData.setLastUpdateDate(LocalDateTime.now());
             BeanUtils.copyProperties(newCertificateData, oldCertificateData);
 
             return DtoMapper.mapCertificateFromData(oldCertificateData);

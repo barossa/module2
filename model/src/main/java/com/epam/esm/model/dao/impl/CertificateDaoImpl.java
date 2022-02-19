@@ -14,7 +14,6 @@ import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import javax.transaction.Transactional;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -45,9 +44,6 @@ public class CertificateDaoImpl implements CertificateDao {
     @Transactional
     public CertificateData save(CertificateData certificateData) throws DaoException {
         try {
-            LocalDateTime now = LocalDateTime.now();
-            certificateData.setCreateDate(now);
-            certificateData.setLastUpdateDate(now);
             entityManager.persist(certificateData);
             return certificateData;
         } catch (Exception e) {
@@ -82,7 +78,6 @@ public class CertificateDaoImpl implements CertificateDao {
     @Override
     public CertificateData update(CertificateData certificate) throws DaoException {
         try {
-            certificate.setLastUpdateDate(LocalDateTime.now());
             return entityManager.merge(certificate);
         } catch (Exception e) {
             throw new DaoException("Can't update certificate data", e);
