@@ -9,10 +9,14 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class Order extends RepresentationModel<Order> {
+@AllArgsConstructor
+public class Certificate extends RepresentationModel<Certificate> {
     private int id;
-    private LocalDateTime orderDate;
-    private BigDecimal cost;
+    private String name;
+    private String description;
+    private BigDecimal price;
+    private Long duration;
+    private LocalDateTime createDate;
+    private LocalDateTime lastUpdateDate;
 }
