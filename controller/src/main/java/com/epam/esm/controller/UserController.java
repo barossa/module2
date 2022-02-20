@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +25,9 @@ import static com.epam.esm.controller.dto.LinkBuilder.*;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+/**
+ * The type User controller.
+ */
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -33,6 +35,14 @@ public class UserController {
 
     private final UserService userService;
 
+    /**
+     * Find all users collection.
+     *
+     * @param page the page
+     *             includes *limit* of elements on the page
+     *             and *page* number from 0 to infinity
+     * @return collection of all users
+     */
     @GetMapping
     public CollectionModel<User> findAllUsers(PageDto page) {
         List<UserDto> usersDto = userService.findAll(page);
@@ -64,6 +74,12 @@ public class UserController {
         return CollectionModel.of(users, others);
     }
 
+    /**
+     * Find user by id.
+     *
+     * @param id the user id
+     * @return the user object
+     */
     @GetMapping("/{id:^[0-9]+$}")
     public RepresentationModel<User> findUserById(@PathVariable int id) {
         UserDto userDto = userService.find(id);
@@ -85,6 +101,15 @@ public class UserController {
         return user;
     }
 
+    /**
+     * Find user orders collection.
+     *
+     * @param id   the id
+     * @param page the page
+     *             includes *limit* of elements on the page
+     *             and *page* number from 0 to infinity
+     * @return the orders collection
+     */
     @GetMapping("/{id:^[0-9]+$}/orders")
     public CollectionModel<Order> findUserOrders(@PathVariable int id,
                                                  PageDto page) {
@@ -111,6 +136,13 @@ public class UserController {
         return CollectionModel.of(orders, others);
     }
 
+    /**
+     * Find user's order by id's.
+     *
+     * @param userId  the user id
+     * @param orderId the order id
+     * @return the order object
+     */
     @GetMapping("/{userId:^[0-9]+$}/orders/{orderId:^[0-9]+$}")
     public RepresentationModel<Order> findUsersOrderById(@PathVariable int userId,
                                                          @PathVariable int orderId) {
@@ -131,17 +163,56 @@ public class UserController {
         return order;
     }
 
+    /**
+     * Find top user with the highest cost of all orders.
+     *
+     * @return the user object
+     */
     @GetMapping("/top")
-    public ResponseEntity<Object> findTopUser() {
+    public RepresentationModel<User> findTopUser() {
         UserDto userDto = userService.findTopUser();
-        return ResponseEntity.ok(userDto);
+        User user = EntityMapper.mapUserFromDto(userDto);
+        Link self = linkTo(methodOn(UserController.class).findTopUser()).withSelfRel().withType(GET);
+        Link userOrders = linkTo(methodOn(UserController.class).findUserOrders(user.getId(), new PageDto()))
+                .withRel("userOrders")
+                .withType(GET);
+        Link makeOrder = linkTo(methodOn(this.getClass()).makeOrder(user.getId(), 0))
+                .withRel("makeOrder")
+                .withType(POST);
+        Link topTag = linkTo(methodOn(TagController.class).getTopTagOfUser(user.getId()))
+                .withRel("topTag")
+                .withType(GET);
+        user.add(self);
+        user.add(userOrders);
+        user.add(makeOrder);
+        user.add(topTag);
+        return user;
     }
 
+    /**
+     * Make order for user with id.
+     *
+     * @param userId        the user id
+     * @param certificateId the certificate id
+     * @return the order object
+     */
     @PostMapping("/{userId:^[0-9]+$}/orders")
-    public ResponseEntity<Object> makeOrder(@PathVariable int userId,
-                                            @RequestParam(defaultValue = "0") int certificateId) {
+    public RepresentationModel<Order> makeOrder(@PathVariable int userId,
+                                                @RequestParam(defaultValue = "0") int certificateId) {
         OrderDto orderDto = userService.makeOrder(userId, certificateId);
         Order order = EntityMapper.mapOrderFromDto(orderDto);
-        return ResponseEntity.ok().body(order);
+        Link self = linkTo(methodOn(UserController.class).makeOrder(userId, certificateId)).withSelfRel().withType(GET);
+        Link userOrders = linkTo(methodOn(UserController.class).findUserOrders(orderDto.getUser().getId(), new PageDto()))
+                .withRel("userOrders")
+                .withType(GET);
+        List<Link> links = buildLinks(this.getClass(), orderDto.getId(), FIND);
+        Link topTag = linkTo(methodOn(TagController.class).getTopTagOfUser(orderDto.getUser().getId()))
+                .withRel("topTag")
+                .withType(GET);
+        order.add(self);
+        order.add(userOrders);
+        order.add(links);
+        order.add(topTag);
+        return order;
     }
 }

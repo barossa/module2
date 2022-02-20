@@ -7,7 +7,9 @@ import com.epam.esm.service.dto.UserDto;
 import org.springframework.beans.BeanUtils;
 
 import java.util.Collection;
+import java.util.Set;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 public final class EntityMapper {
 
@@ -27,6 +29,11 @@ public final class EntityMapper {
     public static Certificate mapCertificateFromDto(CertificateDto dto) {
         Certificate certificate = new Certificate();
         BeanUtils.copyProperties(dto, certificate);
+        Set<TagDto> tagsDto = dto.getTags();
+        Set<Tag> tags = tagsDto.stream()
+                .map(EntityMapper::mapTagFromDto)
+                .collect(Collectors.toSet());
+        certificate.setTags(tags);
         return certificate;
     }
 

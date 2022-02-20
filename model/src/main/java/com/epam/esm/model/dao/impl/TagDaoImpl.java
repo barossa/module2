@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
@@ -73,13 +74,17 @@ public class TagDaoImpl implements TagDao {
 
     @Override
     public TagData findByName(String name) throws DaoException {
+        TagData tagData;
         try {
-            Query query = entityManager.createQuery(FIND_BY_NAME_JQL, TagData.class);
+            TypedQuery<TagData> query = entityManager.createQuery(FIND_BY_NAME_JQL, TagData.class);
             query.setParameter("name", name);
-            return (TagData) query.getSingleResult();
+            tagData = query.getSingleResult();
+        } catch (NoResultException e) {
+            tagData = null;
         } catch (Exception e) {
             throw new DaoException("Can't find tag by name", e);
         }
+        return tagData;
     }
 
     @Override

@@ -7,6 +7,7 @@ import org.springframework.hateoas.RepresentationModel;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -19,4 +20,5 @@ public class Certificate extends RepresentationModel<Certificate> {
     private Long duration;
     private LocalDateTime createDate;
     private LocalDateTime lastUpdateDate;
+    private Set<Tag> tags;
 }
