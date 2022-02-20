@@ -96,7 +96,7 @@ public class CertificateController {
         CertificateDto certificateDto = certificateService.save(certificate);
         Certificate savedCertificate = EntityMapper.mapCertificateFromDto(certificateDto);
 
-        List<Link> links = buildLinks(this.getClass(), certificate.getId(), FIND, UPDATE, DELETE, FIND_ALL);
+        List<Link> links = buildLinks(this.getClass(), certificateDto.getId(), FIND, UPDATE, DELETE, FIND_ALL);
         Link self = buildSelf(this.getClass(), SAVE);
         savedCertificate.add(self);
         savedCertificate.add(links);

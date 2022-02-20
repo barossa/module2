@@ -70,13 +70,14 @@ public class CertificateServiceImpl implements CertificateService {
             if (certificateData == null) {
                 throw new ObjectNotPresentedForDelete();
             }
+            CertificateDto certificateDto = DtoMapper.mapCertificateFromData(certificateData);
 
             int affectedObjects = certificateDao.delete(id);
             if (affectedObjects == 0) {
                 throw new ObjectDeletionException();
             }
 
-            return DtoMapper.mapCertificateFromData(certificateData);
+            return certificateDto;
         } catch (DaoException e) {
             logger.error("Can't delete certificate", e);
             throw new DataAccessException(e);
