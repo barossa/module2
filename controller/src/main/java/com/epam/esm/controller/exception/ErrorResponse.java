@@ -1,4 +1,4 @@
-package com.epam.esm.controller.dto;
+package com.epam.esm.controller.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

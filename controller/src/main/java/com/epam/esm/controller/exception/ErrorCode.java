@@ -1,4 +1,4 @@
-package com.epam.esm.controller.dto;
+package com.epam.esm.controller.exception;
 
 public enum ErrorCode {
     TAG_NOT_FOUND(40401, 404),

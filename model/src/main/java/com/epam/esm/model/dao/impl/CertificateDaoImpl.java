@@ -8,12 +8,12 @@ import com.epam.esm.model.dto.PageData;
 import com.epam.esm.model.exception.DaoException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -76,6 +76,7 @@ public class CertificateDaoImpl implements CertificateDao {
     }
 
     @Override
+    @Transactional
     public CertificateData update(CertificateData certificate) throws DaoException {
         try {
             return entityManager.merge(certificate);
@@ -85,7 +86,6 @@ public class CertificateDaoImpl implements CertificateDao {
     }
 
     @Override
-    @Transactional
     public List<CertificateData> findByFilter(CertificateFilter filter, PageData page, Set<CertificateSort> sorts) throws DaoException {
         try {
             CriteriaBuilder builder = entityManager.getCriteriaBuilder();

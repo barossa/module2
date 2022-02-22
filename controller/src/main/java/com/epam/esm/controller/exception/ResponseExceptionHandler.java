@@ -1,8 +1,5 @@
-package com.epam.esm.controller;
+package com.epam.esm.controller.exception;
 
-import com.epam.esm.controller.dto.ErrorCode;
-import com.epam.esm.controller.dto.ErrorResponse;
-import com.epam.esm.controller.dto.ErrorResponseBuilder;
 import com.epam.esm.service.exception.AbstractServiceException;
 import com.epam.esm.service.exception.extend.*;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +26,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.epam.esm.controller.dto.ErrorCode.*;
+import static com.epam.esm.controller.exception.ErrorCode.*;
 
 @RestControllerAdvice
 @RequiredArgsConstructor

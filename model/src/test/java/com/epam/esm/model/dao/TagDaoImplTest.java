@@ -8,7 +8,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -23,10 +24,8 @@ import static com.epam.esm.model.util.EntityUtils.UNDEFINED_ID;
 @SpringJUnitConfig(TestConfig.class)
 @Sql(scripts = "classpath:sql/db.sql")
 @ExtendWith(SpringExtension.class)
+@EnableAutoConfiguration
 public class TagDaoImplTest {
-
-    @Autowired
-    ApplicationContext applicationContext;
 
     @Autowired
     private TagDao tagDao;

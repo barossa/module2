@@ -1,7 +1,8 @@
-package com.epam.esm.controller.dto;
+package com.epam.esm.controller.link;
 
 public final class HttpMethod {
-    private HttpMethod(){}
+    private HttpMethod() {
+    }
 
     public static final String GET = "GET";
     public static final String POST = "POST";

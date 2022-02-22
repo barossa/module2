@@ -17,11 +17,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.epam.esm.controller.dto.HttpMethod.GET;
-import static com.epam.esm.controller.dto.HttpMethod.POST;
-import static com.epam.esm.controller.dto.LinkBuilder.RelType.FIND;
-import static com.epam.esm.controller.dto.LinkBuilder.RelType.FIND_ALL;
-import static com.epam.esm.controller.dto.LinkBuilder.*;
+import static com.epam.esm.controller.link.HttpMethod.GET;
+import static com.epam.esm.controller.link.HttpMethod.POST;
+import static com.epam.esm.controller.link.LinkBuilder.RelType.FIND;
+import static com.epam.esm.controller.link.LinkBuilder.RelType.FIND_ALL;
+import static com.epam.esm.controller.link.LinkBuilder.*;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 

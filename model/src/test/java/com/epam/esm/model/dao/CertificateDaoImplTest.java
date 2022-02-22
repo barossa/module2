@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -23,6 +24,7 @@ import static com.epam.esm.model.util.EntityUtils.UNDEFINED_ID;
 @SpringJUnitConfig(TestConfig.class)
 @Sql(scripts = "classpath:sql/db.sql")
 @ExtendWith(SpringExtension.class)
+@EnableAutoConfiguration
 public class CertificateDaoImplTest {
 
     @Autowired
@@ -59,7 +61,7 @@ public class CertificateDaoImplTest {
         CertificateData certificateData = certificateDao.find(16);
         certificateData.setName("New name of certificate");
         CertificateData updated = certificateDao.update(certificateData);
-        Assertions.assertEquals(certificateData, updated);
+        Assertions.assertEquals(certificateData.getName(), updated.getName());
     }
 
     @Test

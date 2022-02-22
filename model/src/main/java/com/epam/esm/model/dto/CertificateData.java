@@ -78,14 +78,14 @@ public class CertificateData {
     }
 
     @PrePersist
-    private void onPersist(){
+    private void onPersist() {
         LocalDateTime now = LocalDateTime.now();
         this.createDate = now;
         this.lastUpdateDate = now;
     }
 
     @PreUpdate
-    private void onUpdate(){
+    private void onUpdate() {
         this.lastUpdateDate = LocalDateTime.now();
     }
 }

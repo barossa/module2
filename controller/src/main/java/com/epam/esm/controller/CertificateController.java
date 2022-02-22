@@ -17,8 +17,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.epam.esm.controller.dto.LinkBuilder.RelType.*;
-import static com.epam.esm.controller.dto.LinkBuilder.*;
+import static com.epam.esm.controller.link.LinkBuilder.RelType.*;
+import static com.epam.esm.controller.link.LinkBuilder.*;
 
 
 /**

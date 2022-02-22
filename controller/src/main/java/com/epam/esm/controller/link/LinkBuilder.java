@@ -1,4 +1,4 @@
-package com.epam.esm.controller.dto;
+package com.epam.esm.controller.link;
 
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
@@ -6,7 +6,7 @@ import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.epam.esm.controller.dto.HttpMethod.*;
+import static com.epam.esm.controller.link.HttpMethod.*;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 public final class LinkBuilder {

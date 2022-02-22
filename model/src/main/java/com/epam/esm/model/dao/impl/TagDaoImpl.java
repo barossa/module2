@@ -123,6 +123,7 @@ public class TagDaoImpl implements TagDao {
     }
 
     @Override
+    @Transactional
     public Set<TagData> saveAll(Set<TagData> tags) throws DaoException {
         try {
             if (tags.isEmpty()) {
