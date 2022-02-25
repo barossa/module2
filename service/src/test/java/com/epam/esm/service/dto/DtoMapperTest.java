@@ -1,7 +1,10 @@
 package com.epam.esm.service.dto;
 
-import com.epam.esm.model.dto.CertificateData;
-import com.epam.esm.model.dto.TagData;
+import com.epam.esm.entity.Certificate;
+import com.epam.esm.entity.Tag;
+import com.epam.esm.dto.CertificateDto;
+import com.epam.esm.dto.DtoMapper;
+import com.epam.esm.dto.TagDto;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,17 +14,17 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 
 public class DtoMapperTest {
-    private CertificateData certificateData;
+    private Certificate certificateData;
     private CertificateDto certificateDto;
-    private TagData tagData;
+    private Tag tagData;
     private TagDto tagDto;
 
     @BeforeEach
     public void setUp() {
         LocalDateTime now = LocalDateTime.now();
-        certificateData = new CertificateData(1, "name", "description", new BigDecimal(100), 10L, now, now, Collections.EMPTY_SET);
+        certificateData = new Certificate(1, "name", "description", new BigDecimal(100), 10L, now, now, Collections.EMPTY_SET);
         certificateDto = new CertificateDto(1, "name", "description", new BigDecimal(100), 10L, now, now, Collections.EMPTY_SET);
-        tagData = new TagData(1, "tag", Collections.EMPTY_SET);
+        tagData = new Tag(1, "tag", Collections.EMPTY_SET);
         tagDto = new TagDto(1, "tag", Collections.EMPTY_SET);
     }
 
@@ -33,7 +36,7 @@ public class DtoMapperTest {
 
     @Test
     public void mapCertificateToDataTest() {
-        CertificateData actualData = DtoMapper.mapCertificateToData(certificateDto);
+        Certificate actualData = DtoMapper.mapCertificateToData(certificateDto);
         Assertions.assertEquals(certificateData, actualData);
     }
 
@@ -45,7 +48,7 @@ public class DtoMapperTest {
 
     @Test
     public void mapTagToDataTest() {
-        TagData actualData = DtoMapper.mapTagToData(tagDto);
+        Tag actualData = DtoMapper.mapTagToData(tagDto);
         Assertions.assertEquals(tagData, actualData);
     }
 

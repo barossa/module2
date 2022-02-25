@@ -1,21 +1,23 @@
 package com.epam.esm.service.impl;
 
-import com.epam.esm.model.dao.CertificateDao;
-import com.epam.esm.model.dao.TagDao;
-import com.epam.esm.model.dto.CertificateData;
-import com.epam.esm.model.dto.TagData;
-import com.epam.esm.model.exception.DaoException;
+import com.epam.esm.dao.TagDao;
+import com.epam.esm.dao.UserDao;
+import com.epam.esm.entity.Page;
+import com.epam.esm.entity.Tag;
+import com.epam.esm.entity.User;
+import com.epam.esm.exception.DaoException;
+import com.epam.esm.exception.extend.*;
 import com.epam.esm.service.TagService;
-import com.epam.esm.service.dto.DtoMapper;
-import com.epam.esm.service.dto.TagDto;
-import com.epam.esm.service.exception.extend.*;
-import com.epam.esm.service.validator.TagValidator;
+import com.epam.esm.dto.DtoMapper;
+import com.epam.esm.dto.PageDto;
+import com.epam.esm.dto.TagDto;
+import com.epam.esm.validator.PageValidator;
+import com.epam.esm.validator.TagValidator;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,20 +27,18 @@ public class TagServiceImpl implements TagService {
     private static final Logger logger = LogManager.getLogger(TagServiceImpl.class);
 
     private final TagDao tagDao;
-    private final CertificateDao certificateDao;
+    private final UserDao userDao;
     private final TagValidator tagValidator;
+    private final PageValidator pageValidator;
 
     @Override
     public TagDto find(int id) {
         try {
-            TagData tagData = tagDao.find(id);
+            Tag tagData = tagDao.find(id);
             if (tagData == null) {
-                throw new ObjectNotFoundException();
+                throw new TagNotFoundException();
             }
-            List<CertificateData> certificates = certificateDao.findByTagId(id);
-            tagData.setCertificates(new HashSet<>(certificates));
             return DtoMapper.mapTagFromData(tagData);
-
         } catch (DaoException e) {
             logger.error("Can't find tag", e);
             throw new DataAccessException(e);
@@ -46,9 +46,11 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public List<TagDto> findAll() {
+    public List<TagDto> findAll(PageDto page) {
         try {
-            List<TagData> tagsData = tagDao.findAll();
+            validatePage(page);
+            Page pageData = DtoMapper.mapPageToData(page);
+            List<Tag> tagsData = tagDao.findAll(pageData);
             return DtoMapper.mapTagsFromData(tagsData, Collectors.toList());
         } catch (DaoException e) {
             logger.error("Can't find all tags", e);
@@ -60,13 +62,13 @@ public class TagServiceImpl implements TagService {
     public TagDto save(TagDto tag) {
         try {
             validateTag(tag);
-            TagData tagByName = tagDao.findByName(tag.getName());
+            Tag tagByName = tagDao.findByName(tag.getName());
             if (tagByName != null) {
                 throw new ObjectAlreadyExistsException();
             }
 
-            TagData dataToSave = DtoMapper.mapTagToData(tag);
-            TagData savedTagData = tagDao.save(dataToSave);
+            Tag dataToSave = DtoMapper.mapTagToData(tag);
+            Tag savedTagData = tagDao.save(dataToSave);
             if (savedTagData == null) {
                 logger.warn("Saved tag is not presented: {}", tag);
                 throw new ObjectPostingException();
@@ -82,14 +84,14 @@ public class TagServiceImpl implements TagService {
     @Override
     public TagDto delete(int id) {
         try {
-            TagData tagData = tagDao.find(id);
+            Tag tagData = tagDao.find(id);
             if (tagData == null) {
                 throw new ObjectNotPresentedForDelete();
             }
 
             int affectedObjects = tagDao.delete(id);
             if (affectedObjects == 0) {
-                throw new ObjectNotPresentedForDelete();
+                throw new ObjectDeletionException();
             }
 
             return DtoMapper.mapTagFromData(tagData);
@@ -103,6 +105,48 @@ public class TagServiceImpl implements TagService {
         List<String> errors = tagValidator.validateName(tag.getName());
         if (!errors.isEmpty()) {
             throw new ObjectValidationException(errors);
+        }
+    }
+
+    private void validatePage(PageDto page) {
+        List<String> errors = pageValidator.validatePage(page);
+        if (!errors.isEmpty()) {
+            throw new ObjectValidationException(errors);
+        }
+    }
+
+    @Override
+    public TagDto findMostUsedOfUser(int userId) {
+        try {
+            User userData = userDao.find(userId);
+            if (userData == null) {
+                throw new UserNotFoundException();
+            }
+            Tag tagData = tagDao.findMostUsedOfUser(userData);
+            if (tagData == null) {
+                throw new TagNotFoundException();
+            }
+
+            return DtoMapper.mapTagFromData(tagData);
+
+        } catch (DaoException e) {
+            logger.error("Can't find most used tag of user by id", e);
+            throw new DataAccessException(e);
+        }
+    }
+
+    @Override
+    public TagDto findMostUsedOfTopUser() {
+        try {
+            Tag tagData = tagDao.findMostUsedOfTopUser();
+            if (tagData == null) {
+                throw new TagNotFoundException();
+            }
+            return DtoMapper.mapTagFromData(tagData);
+
+        } catch (DaoException e) {
+            logger.error("Can't find most used tag of top user", e);
+            throw new DataAccessException(e);
         }
     }
 }
