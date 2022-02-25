@@ -38,7 +38,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderDto find(int id) {
         try {
             Order order = orderDao.find(id);
-            if(order == null){
+            if (order == null) {
                 throw new OrderNotFoundException();
             }
 

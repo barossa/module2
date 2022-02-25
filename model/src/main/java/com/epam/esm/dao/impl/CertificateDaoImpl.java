@@ -1,11 +1,11 @@
 package com.epam.esm.dao.impl;
 
+import com.epam.esm.dao.CertificateDao;
 import com.epam.esm.entity.Certificate;
 import com.epam.esm.entity.CertificateFilter;
 import com.epam.esm.entity.CertificateSort;
 import com.epam.esm.entity.Page;
 import com.epam.esm.exception.DaoException;
-import com.epam.esm.dao.CertificateDao;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
