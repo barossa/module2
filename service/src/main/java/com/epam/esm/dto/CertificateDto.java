@@ -1,5 +1,6 @@
-package com.epam.esm.controller.dto;
+package com.epam.esm.dto;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,15 +11,30 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class Certificate extends RepresentationModel<Certificate> {
+@NoArgsConstructor
+public class CertificateDto extends RepresentationModel<CertificateDto> {
+    @JsonView(View.Base.class)
     private int id;
+
+    @JsonView(View.Base.class)
     private String name;
+
+    @JsonView(View.Base.class)
     private String description;
+
+    @JsonView(View.Base.class)
     private BigDecimal price;
+
+    @JsonView(View.Base.class)
     private Long duration;
+
+    @JsonView(View.Base.class)
     private LocalDateTime createDate;
+
+    @JsonView(View.Base.class)
     private LocalDateTime lastUpdateDate;
-    private Set<Tag> tags;
+
+    @JsonView(View.Base.class)
+    private Set<TagDto> tags;
 }
