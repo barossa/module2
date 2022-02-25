@@ -1,6 +1,6 @@
 package com.epam.esm.service;
 
-import com.epam.esm.service.dto.PageDto;
+import com.epam.esm.dto.PageDto;
 
 import java.util.List;
 

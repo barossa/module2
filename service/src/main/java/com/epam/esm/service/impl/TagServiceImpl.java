@@ -1,18 +1,18 @@
 package com.epam.esm.service.impl;
 
-import com.epam.esm.model.dao.TagDao;
-import com.epam.esm.model.dao.UserDao;
-import com.epam.esm.model.dto.PageData;
-import com.epam.esm.model.dto.TagData;
-import com.epam.esm.model.dto.UserData;
-import com.epam.esm.model.exception.DaoException;
+import com.epam.esm.dao.TagDao;
+import com.epam.esm.dao.UserDao;
+import com.epam.esm.entity.Page;
+import com.epam.esm.entity.Tag;
+import com.epam.esm.entity.User;
+import com.epam.esm.exception.DaoException;
+import com.epam.esm.exception.extend.*;
 import com.epam.esm.service.TagService;
-import com.epam.esm.service.dto.DtoMapper;
-import com.epam.esm.service.dto.PageDto;
-import com.epam.esm.service.dto.TagDto;
-import com.epam.esm.service.exception.extend.*;
-import com.epam.esm.service.validator.PageValidator;
-import com.epam.esm.service.validator.TagValidator;
+import com.epam.esm.dto.DtoMapper;
+import com.epam.esm.dto.PageDto;
+import com.epam.esm.dto.TagDto;
+import com.epam.esm.validator.PageValidator;
+import com.epam.esm.validator.TagValidator;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,7 +34,7 @@ public class TagServiceImpl implements TagService {
     @Override
     public TagDto find(int id) {
         try {
-            TagData tagData = tagDao.find(id);
+            Tag tagData = tagDao.find(id);
             if (tagData == null) {
                 throw new TagNotFoundException();
             }
@@ -49,8 +49,8 @@ public class TagServiceImpl implements TagService {
     public List<TagDto> findAll(PageDto page) {
         try {
             validatePage(page);
-            PageData pageData = DtoMapper.mapPageToData(page);
-            List<TagData> tagsData = tagDao.findAll(pageData);
+            Page pageData = DtoMapper.mapPageToData(page);
+            List<Tag> tagsData = tagDao.findAll(pageData);
             return DtoMapper.mapTagsFromData(tagsData, Collectors.toList());
         } catch (DaoException e) {
             logger.error("Can't find all tags", e);
@@ -62,13 +62,13 @@ public class TagServiceImpl implements TagService {
     public TagDto save(TagDto tag) {
         try {
             validateTag(tag);
-            TagData tagByName = tagDao.findByName(tag.getName());
+            Tag tagByName = tagDao.findByName(tag.getName());
             if (tagByName != null) {
                 throw new ObjectAlreadyExistsException();
             }
 
-            TagData dataToSave = DtoMapper.mapTagToData(tag);
-            TagData savedTagData = tagDao.save(dataToSave);
+            Tag dataToSave = DtoMapper.mapTagToData(tag);
+            Tag savedTagData = tagDao.save(dataToSave);
             if (savedTagData == null) {
                 logger.warn("Saved tag is not presented: {}", tag);
                 throw new ObjectPostingException();
@@ -84,7 +84,7 @@ public class TagServiceImpl implements TagService {
     @Override
     public TagDto delete(int id) {
         try {
-            TagData tagData = tagDao.find(id);
+            Tag tagData = tagDao.find(id);
             if (tagData == null) {
                 throw new ObjectNotPresentedForDelete();
             }
@@ -118,11 +118,11 @@ public class TagServiceImpl implements TagService {
     @Override
     public TagDto findMostUsedOfUser(int userId) {
         try {
-            UserData userData = userDao.find(userId);
+            User userData = userDao.find(userId);
             if (userData == null) {
                 throw new UserNotFoundException();
             }
-            TagData tagData = tagDao.findMostUsedOfUser(userData);
+            Tag tagData = tagDao.findMostUsedOfUser(userData);
             if (tagData == null) {
                 throw new TagNotFoundException();
             }
@@ -138,7 +138,7 @@ public class TagServiceImpl implements TagService {
     @Override
     public TagDto findMostUsedOfTopUser() {
         try {
-            TagData tagData = tagDao.findMostUsedOfTopUser();
+            Tag tagData = tagDao.findMostUsedOfTopUser();
             if (tagData == null) {
                 throw new TagNotFoundException();
             }

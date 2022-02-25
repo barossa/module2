@@ -1,33 +1,26 @@
 package com.epam.esm.service.impl;
 
-import com.epam.esm.model.dao.CertificateDao;
-import com.epam.esm.model.dao.OrderDao;
-import com.epam.esm.model.dao.UserDao;
-import com.epam.esm.model.dto.CertificateData;
-import com.epam.esm.model.dto.OrderData;
-import com.epam.esm.model.dto.PageData;
-import com.epam.esm.model.dto.UserData;
-import com.epam.esm.model.exception.DaoException;
+import com.epam.esm.dao.OrderDao;
+import com.epam.esm.dao.UserDao;
+import com.epam.esm.dto.DtoMapper;
+import com.epam.esm.dto.OrderDto;
+import com.epam.esm.dto.PageDto;
+import com.epam.esm.dto.UserDto;
+import com.epam.esm.entity.Order;
+import com.epam.esm.entity.Page;
+import com.epam.esm.entity.User;
+import com.epam.esm.exception.DaoException;
+import com.epam.esm.exception.extend.*;
 import com.epam.esm.service.UserService;
-import com.epam.esm.service.dto.DtoMapper;
-import com.epam.esm.service.dto.OrderDto;
-import com.epam.esm.service.dto.PageDto;
-import com.epam.esm.service.dto.UserDto;
-import com.epam.esm.service.exception.extend.*;
-import com.epam.esm.service.validator.IdValidator;
-import com.epam.esm.service.validator.PageValidator;
-import com.epam.esm.service.validator.UserValidator;
+import com.epam.esm.validator.PageValidator;
+import com.epam.esm.validator.UserValidator;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static com.epam.esm.model.util.EntityUtils.UNDEFINED_ID;
 
 @RequiredArgsConstructor
 @Service
@@ -36,16 +29,14 @@ public class UserServiceImpl implements UserService {
 
     private final UserDao userDao;
     private final OrderDao orderDao;
-    private final CertificateDao certificateDao;
 
     private final UserValidator userValidator;
     private final PageValidator pageValidator;
-    private final IdValidator idValidator;
 
     @Override
     public UserDto find(int id) {
         try {
-            UserData userData = userDao.find(id);
+            User userData = userDao.find(id);
             if (userData == null) {
                 throw new UserNotFoundException();
             }
@@ -60,8 +51,8 @@ public class UserServiceImpl implements UserService {
     public List<UserDto> findAll(PageDto page) {
         try {
             validatePage(page);
-            PageData pageData = DtoMapper.mapPageToData(page);
-            List<UserData> usersData = userDao.findAll(pageData);
+            Page pageData = DtoMapper.mapPageToData(page);
+            List<User> usersData = userDao.findAll(pageData);
             return DtoMapper.mapUsersFromData(usersData, Collectors.toList());
 
         } catch (DaoException e) {
@@ -77,8 +68,8 @@ public class UserServiceImpl implements UserService {
             if (!errors.isEmpty()) {
                 throw new ObjectValidationException(errors);
             }
-            UserData userData = DtoMapper.mapUserToData(userDto);
-            UserData savedUserData = userDao.save(userData);
+            User userData = DtoMapper.mapUserToData(userDto);
+            User savedUserData = userDao.save(userData);
             return DtoMapper.mapUserFromData(savedUserData);
 
         } catch (DaoException e) {
@@ -90,7 +81,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto delete(int id) {
         try {
-            UserData userData = userDao.find(id);
+            User userData = userDao.find(id);
             if (userData == null) {
                 throw new ObjectNotPresentedForDelete();
             }
@@ -110,12 +101,12 @@ public class UserServiceImpl implements UserService {
     public List<OrderDto> findUserOrders(int userId, PageDto page) {
         try {
             validatePage(page);
-            UserData userData = userDao.find(userId);
+            User userData = userDao.find(userId);
             if (userData == null) {
                 throw new UserNotFoundException();
             }
-            PageData pageData = DtoMapper.mapPageToData(page);
-            List<OrderData> userOrdersData = orderDao.findByUser(userData, pageData);
+            Page pageData = DtoMapper.mapPageToData(page);
+            List<Order> userOrdersData = orderDao.findByUser(userData, pageData);
             return DtoMapper.mapOrdersFromData(userOrdersData, Collectors.toList());
 
         } catch (DaoException e) {
@@ -127,7 +118,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public OrderDto findUserOrder(int userId, int orderId) {
         try {
-            OrderData orderData = orderDao.find(orderId);
+            Order orderData = orderDao.find(orderId);
             if (orderData == null || orderData.getUser().getId() != userId) {
                 throw new OrderNotFoundException();
             }
@@ -140,43 +131,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
-    public OrderDto makeOrder(int userId, int certificateId) {
-        try {
-            List<String> errors = idValidator.validateId(certificateId);
-            if (!errors.isEmpty()) {
-                throw new ObjectValidationException(errors);
-            }
-
-            UserData userData = userDao.find(userId);
-            if (userData == null) {
-                throw new UserNotFoundException();
-            }
-            CertificateData certificateData = certificateDao.find(certificateId);
-            if (certificateData == null) {
-                throw new CertificateNotFoundException();
-            }
-            OrderData orderData = new OrderData(UNDEFINED_ID,
-                    LocalDateTime.now(),
-                    certificateData.getPrice(),
-                    userData,
-                    certificateData);
-            orderDao.save(orderData);
-            return DtoMapper.mapOrderFromData(orderData);
-
-        } catch (DaoException e) {
-            logger.error("Can't made order", e);
-            throw new DataAccessException(e);
-        }
-    }
-
-    @Override
     public UserDto findTopUser() {
-        try{
-            UserData userData = userDao.findTopUser();
+        try {
+            User userData = userDao.findTopUser();
             return DtoMapper.mapUserFromData(userData);
 
-        }catch (DaoException e){
+        } catch (DaoException e) {
             logger.error("Cant find top user", e);
             throw new DataAccessException();
         }

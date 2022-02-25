@@ -1,8 +1,9 @@
 package com.epam.esm.model.dao;
 
+import com.epam.esm.dao.CertificateDao;
+import com.epam.esm.entity.*;
 import com.epam.esm.model.config.TestConfig;
-import com.epam.esm.model.dto.*;
-import com.epam.esm.model.exception.DaoException;
+import com.epam.esm.exception.DaoException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,7 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static com.epam.esm.model.util.EntityUtils.UNDEFINED_ID;
+import static com.epam.esm.util.EntityUtils.UNDEFINED_ID;
 
 @SpringJUnitConfig(TestConfig.class)
 @Sql(scripts = "classpath:sql/db.sql")
@@ -32,16 +33,16 @@ public class CertificateDaoImplTest {
 
     @Test
     public void findTest() throws DaoException {
-        CertificateData certificateData = certificateDao.find(15);
-        Assertions.assertNotNull(certificateData);
+        Certificate certificate = certificateDao.find(15);
+        Assertions.assertNotNull(certificate);
     }
 
     @Test
     public void saveTest() throws DaoException {
-        CertificateData certificateData = new CertificateData(UNDEFINED_ID, "Certificate", "Description", new BigDecimal(100), 7L,
+        Certificate certificate = new Certificate(UNDEFINED_ID, "Certificate", "Description", new BigDecimal(100), 7L,
                 LocalDateTime.now(), LocalDateTime.now(), Collections.emptySet());
-        CertificateData actualData = certificateDao.save(certificateData);
-        Assertions.assertNotEquals(0, actualData.getId());
+        Certificate actual = certificateDao.save(certificate);
+        Assertions.assertNotEquals(0, actual.getId());
     }
 
     @Test
@@ -52,26 +53,26 @@ public class CertificateDaoImplTest {
 
     @Test
     public void findAllTest() throws DaoException {
-        List<CertificateData> actualData = certificateDao.findAll(new PageData());
-        Assertions.assertFalse(actualData.isEmpty());
+        List<Certificate> actual = certificateDao.findAll(new Page());
+        Assertions.assertFalse(actual.isEmpty());
     }
 
     @Test
     public void updateTest() throws DaoException {
-        CertificateData certificateData = certificateDao.find(16);
-        certificateData.setName("New name of certificate");
-        CertificateData updated = certificateDao.update(certificateData);
-        Assertions.assertEquals(certificateData.getName(), updated.getName());
+        Certificate certificate = certificateDao.find(16);
+        certificate.setName("New name of certificate");
+        Certificate updated = certificateDao.update(certificate);
+        Assertions.assertEquals(certificate.getName(), updated.getName());
     }
 
     @Test
     public void findByOptions() throws DaoException {
-        TagData tagData = new TagData(49, "another-tag", Collections.emptySet());
-        List<TagData> tags = Collections.singletonList(tagData);
+        Tag tag = new Tag(49, "another-tag", Collections.emptySet());
+        List<Tag> tags = Collections.singletonList(tag);
         CertificateFilter filter = new CertificateFilter(tags, Collections.emptyList(), Collections.emptyList());
         Set<CertificateSort> sorts = new HashSet<>();
-        List<CertificateData> actualData = certificateDao.findByFilter(filter, new PageData(), sorts);
-        Assertions.assertFalse(actualData.isEmpty());
+        List<Certificate> actual = certificateDao.findByFilter(filter, new Page(), sorts);
+        Assertions.assertFalse(actual.isEmpty());
     }
 
 }

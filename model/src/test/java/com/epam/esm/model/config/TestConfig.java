@@ -1,9 +1,9 @@
 package com.epam.esm.model.config;
 
-import com.epam.esm.model.dao.CertificateDao;
-import com.epam.esm.model.dao.TagDao;
-import com.epam.esm.model.dao.impl.CertificateDaoImpl;
-import com.epam.esm.model.dao.impl.TagDaoImpl;
+import com.epam.esm.dao.CertificateDao;
+import com.epam.esm.dao.TagDao;
+import com.epam.esm.dao.impl.CertificateDaoImpl;
+import com.epam.esm.dao.impl.TagDaoImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;

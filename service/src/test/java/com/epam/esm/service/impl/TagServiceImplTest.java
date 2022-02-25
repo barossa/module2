@@ -1,7 +1,7 @@
 package com.epam.esm.service.impl;
 
-import com.epam.esm.service.dto.PageDto;
-import com.epam.esm.service.dto.TagDto;
+import com.epam.esm.dto.PageDto;
+import com.epam.esm.dto.TagDto;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

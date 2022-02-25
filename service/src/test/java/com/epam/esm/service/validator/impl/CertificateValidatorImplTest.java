@@ -1,8 +1,10 @@
 package com.epam.esm.service.validator.impl;
 
-import com.epam.esm.service.validator.CertificateValidator;
-import com.epam.esm.service.validator.ErrorMessageProvider;
-import com.epam.esm.service.validator.TagValidator;
+import com.epam.esm.validator.CertificateValidator;
+import com.epam.esm.validator.ErrorMessageProvider;
+import com.epam.esm.validator.TagValidator;
+import com.epam.esm.validator.impl.CertificateValidatorImpl;
+import com.epam.esm.validator.impl.TagValidatorImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;

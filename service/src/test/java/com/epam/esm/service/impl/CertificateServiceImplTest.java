@@ -1,8 +1,8 @@
 package com.epam.esm.service.impl;
 
-import com.epam.esm.service.dto.CertificateDto;
-import com.epam.esm.service.dto.Filter;
-import com.epam.esm.service.dto.PageDto;
+import com.epam.esm.dto.CertificateDto;
+import com.epam.esm.dto.CertificateFilterDto;
+import com.epam.esm.dto.PageDto;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,7 @@ import static org.mockito.Mockito.when;
 public class CertificateServiceImplTest {
     private CertificateDto certificateDto;
     private List<CertificateDto> certificateDtos;
-    private Filter filter;
+    private CertificateFilterDto filter;
 
     @Mock
     private CertificateServiceImpl certificateService;
@@ -35,7 +35,7 @@ public class CertificateServiceImplTest {
                 LocalDateTime.now(), LocalDateTime.now(), Collections.emptySet());
         certificateDtos = new ArrayList<>();
         certificateDtos.add(certificateDto);
-        filter = new Filter(Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+        filter = new CertificateFilterDto(Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
     }
 
     @Test
@@ -75,7 +75,7 @@ public class CertificateServiceImplTest {
 
     @Test
     public void findByFilterTest() {
-        when(certificateService.findByFilter(any(Filter.class), any(PageDto.class), any(Set.class))).thenReturn(certificateDtos);
+        when(certificateService.findByFilter(any(CertificateFilterDto.class), any(PageDto.class), any(Set.class))).thenReturn(certificateDtos);
         Set<String> sorts = new HashSet<>();
         List<CertificateDto> actualCertificates = certificateService.findByFilter(filter, new PageDto(), sorts);
         Assertions.assertEquals(certificateDtos, actualCertificates);
