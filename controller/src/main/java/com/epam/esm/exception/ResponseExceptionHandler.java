@@ -8,6 +8,7 @@ import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -24,6 +25,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.epam.esm.exception.ErrorCode.BAD_CREDENTIALS;
 
 @RestControllerAdvice
 @RequiredArgsConstructor

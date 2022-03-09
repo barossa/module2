@@ -17,14 +17,21 @@ import com.epam.esm.validator.UserValidator;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl implements UserService, UserDetailsService {
     private static final Logger logger = LogManager.getLogger(UserServiceImpl.class);
 
     private final UserDao userDao;
@@ -32,6 +39,8 @@ public class UserServiceImpl implements UserService {
 
     private final UserValidator userValidator;
     private final PageValidator pageValidator;
+
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserDto find(int id) {
@@ -69,6 +78,8 @@ public class UserServiceImpl implements UserService {
                 throw new ObjectValidationException(errors);
             }
             User userData = DtoMapper.mapUserToData(userDto);
+            String encodedPassword = passwordEncoder.encode(userData.getPassword());
+            userData.setPassword(encodedPassword);
             User savedUserData = userDao.save(userData);
             return DtoMapper.mapUserFromData(savedUserData);
 
@@ -146,6 +157,22 @@ public class UserServiceImpl implements UserService {
         List<String> errors = pageValidator.validatePage(page);
         if (!errors.isEmpty()) {
             throw new ObjectValidationException(errors);
+        }
+    }
+
+    @Override
+    @Transactional
+    public UserDto loadUserByUsername(String username) throws UsernameNotFoundException {
+        try{
+            User user = userDao.findByName(username);
+            if(user == null){
+                throw new UsernameNotFoundException("User not presented");
+            }
+            return DtoMapper.mapUserFromData(user);
+
+        }catch (DaoException e){
+            logger.error("Can't load user by name from db", e);
+            throw new UsernameNotFoundException("Can't load user by name from db", e);
         }
     }
 }

@@ -3,7 +3,9 @@ package com.epam.esm.controller;
 import com.epam.esm.dto.CertificateDto;
 import com.epam.esm.dto.CertificateFilterDto;
 import com.epam.esm.dto.PageDto;
+import com.epam.esm.dto.View;
 import com.epam.esm.service.CertificateService;
+import com.fasterxml.jackson.annotation.JsonView;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
@@ -39,6 +41,7 @@ public class CertificateController {
      * @return the certificate objects
      */
     @GetMapping
+    @JsonView(View.Base.class)
     public CollectionModel<CertificateDto> searchByOptions(CertificateFilterDto filter,
                                                            @RequestParam(name = "sort", required = false) Set<String> sorts,
                                                            PageDto page) {
@@ -67,6 +70,7 @@ public class CertificateController {
      * @return the certificate object
      */
     @GetMapping(value = "/{id:^[0-9]+$}")
+    @JsonView(View.Base.class)
     public RepresentationModel<CertificateDto> getCertificate(@PathVariable int id) {
         CertificateDto certificate = certificateService.find(id);
         List<Link> links = buildLinks(CertificateController.class, id, FIND_ALL, UPDATE, DELETE, SAVE);
@@ -89,6 +93,7 @@ public class CertificateController {
      * @return the added certificate object
      */
     @PostMapping
+    @JsonView(View.Base.class)
     public RepresentationModel<CertificateDto> addCertificate(@RequestBody CertificateDto certificate) {
         CertificateDto savedCertificate = certificateService.save(certificate);
         List<Link> links = buildLinks(this.getClass(), savedCertificate.getId(), FIND, UPDATE, DELETE, FIND_ALL);
@@ -107,6 +112,7 @@ public class CertificateController {
      * @return the patched certificate object
      */
     @PatchMapping(value = "/{id:^[0-9]+$}")
+    @JsonView(View.Base.class)
     public RepresentationModel<CertificateDto> modifyCertificate(@RequestBody CertificateDto certificate, @PathVariable int id) {
         certificate.setId(id);
         CertificateDto updatedCertificate = certificateService.update(certificate);
@@ -124,6 +130,7 @@ public class CertificateController {
      * @return the delete response
      */
     @DeleteMapping("/{id:^[0-9]+$}")
+    @JsonView(View.Base.class)
     public RepresentationModel<CertificateDto> deleteCertificate(@PathVariable int id) {
         CertificateDto certificate = certificateService.delete(id);
         List<Link> links = buildLinks(this.getClass(), FIND_ALL, SAVE);

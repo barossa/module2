@@ -1,19 +1,20 @@
 package com.epam.esm.controller;
 
-import com.epam.esm.dto.OrderDto;
-import com.epam.esm.dto.OrderParams;
-import com.epam.esm.dto.PageDto;
-import com.epam.esm.dto.View;
+import com.epam.esm.dto.*;
+import com.epam.esm.exception.extend.OrderNotFoundException;
 import com.epam.esm.service.OrderService;
+import com.epam.esm.service.UserService;
 import com.fasterxml.jackson.annotation.JsonView;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static com.epam.esm.dto.UserRoles.ADMIN_ROLE;
 import static com.epam.esm.link.HttpMethod.GET;
 import static com.epam.esm.link.LinkBuilder.RelType.DELETE;
 import static com.epam.esm.link.LinkBuilder.RelType.FIND;
@@ -27,11 +28,18 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequiredArgsConstructor
 public class OrderController {
     private final OrderService orderService;
+    private final UserService userService;
 
     @GetMapping
     @JsonView(View.Base.class)
-    public CollectionModel<OrderDto> findAll(PageDto page) {
-        List<OrderDto> orders = orderService.findAll(page);
+    public CollectionModel<OrderDto> findAll(PageDto page, Authentication authentication) {
+        UserDto user = (UserDto) authentication.getPrincipal();
+        List<OrderDto> orders;
+        if(user.getRoles().contains(ADMIN_ROLE)){
+            orders = orderService.findAll(page);
+        }else {
+            orders = userService.findUserOrders(user.getId(), page);
+        }
         CollectionModel<OrderDto> collection = CollectionModel.of(orders);
         if (!orders.isEmpty()) {
             String pageQuery = pageQuery(page);
@@ -44,8 +52,12 @@ public class OrderController {
 
     @GetMapping("/{id:^[0-9]+$}")
     @JsonView(View.Base.class)
-    public RepresentationModel<OrderDto> findById(@PathVariable int id) {
+    public RepresentationModel<OrderDto> findById(@PathVariable int id, Authentication authentication) {
         OrderDto order = orderService.find(id);
+        UserDto user = (UserDto) authentication.getPrincipal();
+        if(order.getUser().getId() != user.getId() && !user.getRoles().contains(ADMIN_ROLE)){
+            throw new OrderNotFoundException();
+        }
         Link self = buildSelf(this.getClass(), FIND);
         order.add(self);
         return order;
@@ -69,20 +81,26 @@ public class OrderController {
      */
     @PostMapping
     @JsonView(View.Base.class)
-    public RepresentationModel<OrderDto> makeOrder(@RequestBody OrderParams params) {
+    public RepresentationModel<OrderDto> makeOrder(@RequestBody OrderParams params, Authentication authentication) {
+        UserDto user = (UserDto) authentication.getPrincipal();
+        OrderDto order;
+        if(user.getRoles().contains(ADMIN_ROLE)){
+            order = orderService.save(params.getCertificateId(), params.getUserId());
+        }else{
+            order = orderService.save(params.getCertificateId(), user.getId());
+        }
 
-        OrderDto orderDto = orderService.save(params.getCertificateId(), params.getUserId());
         Link self = linkTo(this.getClass()).withSelfRel().withType(GET);
-        Link userOrders = linkTo(methodOn(UserController.class).findUserOrders(orderDto.getUser().getId(), new PageDto()))
+        Link userOrders = linkTo(methodOn(UserController.class).findUserOrders(order.getUser().getId(), new PageDto()))
                 .withRel("userOrders").withType(GET);
-        List<Link> links = buildLinks(this.getClass(), orderDto.getId(), FIND);
-        Link topTag = linkTo(methodOn(TagController.class).getTopTagOfUser(orderDto.getUser().getId()))
+        List<Link> links = buildLinks(this.getClass(), order.getId(), FIND);
+        Link topTag = linkTo(methodOn(TagController.class).getTopTagOfUser(order.getUser().getId()))
                 .withRel("topTag").withType(GET);
-        orderDto.add(self);
-        orderDto.add(userOrders);
-        orderDto.add(links);
-        orderDto.add(topTag);
-        return orderDto;
+        order.add(self);
+        order.add(userOrders);
+        order.add(links);
+        order.add(topTag);
+        return order;
     }
 
 }

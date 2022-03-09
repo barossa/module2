@@ -1,6 +1,9 @@
 package com.epam.esm.exception;
 
 public enum ErrorCode {
+    BAD_CREDENTIALS(40101, 401),
+    INVALID_TOKEN(40102, 401),
+    ACCESS_DENIED(40301,403),
     TAG_NOT_FOUND(40401, 404),
     OBJECT_NOT_PRESENTED_FOR_UPDATE(40402, 404),
     PATH_NOT_FOUND(40403, 404),

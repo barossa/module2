@@ -74,12 +74,18 @@ public final class DtoMapper {
 
     public static UserDto mapUserFromData(User data) {
         UserDto dto = new UserDto();
+        Set<String> roles = data.getRoles().stream()
+                .map(Role::getName).collect(Collectors.toSet());
+        dto.setRoles(roles);
         BeanUtils.copyProperties(data, dto);
         return dto;
     }
 
     public static User mapUserToData(UserDto dto) {
         User data = new User();
+        Set<Role> roles = dto.getRoles().stream()
+                .map(Role::new).collect(Collectors.toSet());
+        data.setRoles(roles);
         BeanUtils.copyProperties(dto, data);
         return data;
     }
