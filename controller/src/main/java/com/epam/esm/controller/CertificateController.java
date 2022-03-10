@@ -5,6 +5,7 @@ import com.epam.esm.dto.CertificateFilterDto;
 import com.epam.esm.dto.PageDto;
 import com.epam.esm.dto.View;
 import com.epam.esm.service.CertificateService;
+import com.epam.esm.util.SecurityUtils;
 import com.fasterxml.jackson.annotation.JsonView;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.CollectionModel;
@@ -15,9 +16,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Set;
 
+import static com.epam.esm.dto.UserRoles.ADMIN_ROLE;
 import static com.epam.esm.link.HttpMethod.GET;
-import static com.epam.esm.link.LinkBuilder.*;
 import static com.epam.esm.link.LinkBuilder.RelType.*;
+import static com.epam.esm.link.LinkBuilder.*;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 
@@ -46,11 +48,14 @@ public class CertificateController {
                                                            @RequestParam(name = "sort", required = false) Set<String> sorts,
                                                            PageDto page) {
         List<CertificateDto> certificates = certificateService.findByFilter(filter, page, sorts);
+        List<String> roles = SecurityUtils.getCurrentRoles();
         for (CertificateDto certificate : certificates) {
-            List<Link> links = buildLinks(this.getClass(), certificate.getId(), UPDATE, DELETE);
             Link self = buildSelf(this.getClass(), certificate.getId(), FIND);
             certificate.add(self);
-            certificate.add(links);
+            if (roles.contains(ADMIN_ROLE)) {
+                List<Link> links = buildLinks(this.getClass(), certificate.getId(), UPDATE, DELETE);
+                certificate.add(links);
+            }
         }
         CollectionModel<CertificateDto> collection = CollectionModel.of(certificates);
         if (!certificates.isEmpty()) {
@@ -73,11 +78,17 @@ public class CertificateController {
     @JsonView(View.Base.class)
     public RepresentationModel<CertificateDto> getCertificate(@PathVariable int id) {
         CertificateDto certificate = certificateService.find(id);
-        List<Link> links = buildLinks(CertificateController.class, id, FIND_ALL, UPDATE, DELETE, SAVE);
+        List<Link> links = buildLinks(CertificateController.class, id, FIND_ALL);
+
+        List<String> roles = SecurityUtils.getCurrentRoles();
+        if (roles.contains(ADMIN_ROLE)) {
+            List<Link> adminLinks = buildLinks(CertificateController.class, id, UPDATE, DELETE, SAVE);
+            links.addAll(adminLinks);
+        }
+
         Link self = buildSelf(CertificateController.class, id, FIND);
         certificate.add(self);
         certificate.add(links);
-
         return certificate;
     }
 

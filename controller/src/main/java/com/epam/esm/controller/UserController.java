@@ -5,24 +5,22 @@ import com.epam.esm.dto.PageDto;
 import com.epam.esm.dto.UserDto;
 import com.epam.esm.dto.View;
 import com.epam.esm.service.UserService;
+import com.epam.esm.util.JwtUtils;
+import com.epam.esm.util.SecurityUtils;
 import com.fasterxml.jackson.annotation.JsonView;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
-import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
+import static com.epam.esm.dto.UserRoles.ADMIN_ROLE;
 import static com.epam.esm.link.HttpMethod.GET;
+import static com.epam.esm.link.LinkBuilder.RelType.*;
 import static com.epam.esm.link.LinkBuilder.*;
-import static com.epam.esm.link.LinkBuilder.RelType.FIND;
-import static com.epam.esm.link.LinkBuilder.RelType.FIND_ALL;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -48,17 +46,21 @@ public class UserController {
     @JsonView(View.Base.class)
     public CollectionModel<UserDto> findAllUsers(PageDto page) {
         List<UserDto> users = userService.findAll(page);
+        UserDto principal = SecurityUtils.getCurrentUser();
         for (UserDto user : users) {
             Link self = buildSelf(this.getClass(), user.getId(), FIND);
-            Link userOrders = linkTo(methodOn(UserController.class).findUserOrders(user.getId(), new PageDto()))
-                    .withRel("userOrders")
-                    .withType(GET);
             Link topTag = linkTo(methodOn(TagController.class).getTopTagOfUser(user.getId()))
                     .withRel("topTag")
                     .withType(GET);
             user.add(self);
-            user.add(userOrders);
             user.add(topTag);
+
+            if (principal.getRoles().contains(ADMIN_ROLE)) {
+                Link adminLinks = linkTo(methodOn(UserController.class).findUserOrders(user.getId(), new PageDto()))
+                        .withRel("userOrders")
+                        .withType(GET);
+                user.add(adminLinks);
+            }
         }
 
         CollectionModel<UserDto> collection = CollectionModel.of(users);
@@ -80,16 +82,8 @@ public class UserController {
     public RepresentationModel<UserDto> findUserById(@PathVariable int id) {
         UserDto user = userService.find(id);
         Link self = buildSelf(this.getClass(), id, FIND);
-        Link userOrders = linkTo(methodOn(UserController.class).findUserOrders(user.getId(), new PageDto()))
-                .withRel("userOrders")
-                .withType(GET);
-        Link topTag = linkTo(methodOn(TagController.class).getTopTagOfUser(user.getId()))
-                .withRel("topTag")
-                .withType(GET);
         user.add(self);
-        user.add(userOrders);
-        user.add(topTag);
-        return user;
+        return prepareUserModel(user);
     }
 
     /**
@@ -114,7 +108,7 @@ public class UserController {
         }
 
         CollectionModel<OrderDto> collection = CollectionModel.of(orders);
-        if(!orders.isEmpty()) {
+        if (!orders.isEmpty()) {
             String pageQuery = pageQuery(page);
             String query = prepareQuery(pageQuery);
             Link self = linkTo(methodOn(this.getClass()).findUserOrders(id, page)).slash(query).withSelfRel().withType(GET);
@@ -154,15 +148,33 @@ public class UserController {
     public RepresentationModel<UserDto> findTopUser() {
         UserDto user = userService.findTopUser();
         Link self = linkTo(methodOn(UserController.class).findTopUser()).withSelfRel().withType(GET);
-        Link userOrders = linkTo(methodOn(UserController.class).findUserOrders(user.getId(), new PageDto()))
-                .withRel("userOrders")
-                .withType(GET);
+        user.add(self);
+        return prepareUserModel(user);
+    }
+
+    @PostMapping
+    public RepresentationModel<?> register(@RequestBody UserDto user) {
+        UserDto savedUser = userService.save(user);
+        String issuer = "/users";
+        Map<String, String> tokens = JwtUtils.buildTokens(savedUser, issuer);
+        Link self = buildSelf(this.getClass(), SAVE);
+        return CollectionModel.of(tokens).add(self);
+    }
+
+    private RepresentationModel<UserDto> prepareUserModel(UserDto user) {
         Link topTag = linkTo(methodOn(TagController.class).getTopTagOfUser(user.getId()))
                 .withRel("topTag")
                 .withType(GET);
-        user.add(self);
-        user.add(userOrders);
         user.add(topTag);
+
+        List<String> roles = SecurityUtils.getCurrentRoles();
+        if (roles.contains(ADMIN_ROLE)) {
+            Link adminLinks = linkTo(methodOn(UserController.class).findUserOrders(user.getId(), new PageDto()))
+                    .withRel("userOrders")
+                    .withType(GET);
+            user.add(adminLinks);
+        }
         return user;
     }
+
 }

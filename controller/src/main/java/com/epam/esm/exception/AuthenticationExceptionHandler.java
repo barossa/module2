@@ -10,7 +10,6 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -38,15 +37,15 @@ public class AuthenticationExceptionHandler implements AuthenticationEntryPoint,
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
-        handleException(request, response, authException);
+        handleException(response, authException);
     }
 
     @Override
-    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
-        handleException(request, response, accessDeniedException);
+    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException {
+        handleException(response, accessDeniedException);
     }
 
-    protected void handleException(HttpServletRequest request, HttpServletResponse response, Exception ex) throws IOException {
+    protected void handleException(HttpServletResponse response, Exception ex) throws IOException {
         Class<? extends Exception> exceptionClass = ex.getClass();
         ErrorCode errorCode = exceptions.get(exceptionClass);
         if (errorCode == null) {

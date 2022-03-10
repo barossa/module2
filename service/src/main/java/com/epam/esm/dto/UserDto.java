@@ -10,6 +10,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -27,7 +28,7 @@ public class UserDto extends RepresentationModel<UserDto> implements UserDetails
     private String password;
 
     @JsonView(View.Full.class)
-    private Set<String> roles;
+    private Set<String> roles = new HashSet<>();
 
     @Override
     @JsonView(View.Full.class)

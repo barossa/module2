@@ -2,17 +2,21 @@ package com.epam.esm.controller;
 
 import com.epam.esm.dto.PageDto;
 import com.epam.esm.dto.TagDto;
+import com.epam.esm.dto.UserDto;
 import com.epam.esm.dto.View;
 import com.epam.esm.service.TagService;
+import com.epam.esm.util.SecurityUtils;
 import com.fasterxml.jackson.annotation.JsonView;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static com.epam.esm.dto.UserRoles.ADMIN_ROLE;
 import static com.epam.esm.link.HttpMethod.GET;
 import static com.epam.esm.link.LinkBuilder.RelType.*;
 import static com.epam.esm.link.LinkBuilder.*;
@@ -35,13 +39,16 @@ public class TagController {
      */
     @GetMapping
     @JsonView(View.Base.class)
-    public CollectionModel<TagDto> getAllTags(PageDto page) {
+    public CollectionModel<TagDto> getAllTags(PageDto page, Authentication authentication) {
         List<TagDto> tags = tagService.findAll(page);
+        UserDto user = (UserDto) authentication.getPrincipal();
         for (TagDto tag : tags) {
             Link self = buildSelf(this.getClass(), tag.getId(), FIND);
-            List<Link> links = buildLinks(this.getClass(), tag.getId(), DELETE, SAVE);
             tag.add(self);
-            tag.add(links);
+            if (user.getRoles().contains(ADMIN_ROLE)) {
+                List<Link> links = buildLinks(this.getClass(), tag.getId(), DELETE, SAVE);
+                tag.add(links);
+            }
         }
         CollectionModel<TagDto> collection = CollectionModel.of(tags);
         if (!tags.isEmpty()) {
@@ -62,12 +69,15 @@ public class TagController {
      */
     @GetMapping(value = "/{id:^[0-9]+$}")
     @JsonView(View.Base.class)
-    public RepresentationModel<TagDto> getTag(@PathVariable int id) {
+    public RepresentationModel<TagDto> getTag(@PathVariable int id, Authentication authentication) {
         TagDto tag = tagService.find(id);
-        List<Link> links = buildLinks(this.getClass(), id, DELETE, SAVE);
         Link self = buildSelf(this.getClass(), id, FIND);
         tag.add(self);
-        tag.add(links);
+        UserDto user = (UserDto) authentication.getPrincipal();
+        if (user.getRoles().contains(ADMIN_ROLE)) {
+            List<Link> links = buildLinks(this.getClass(), id, DELETE, SAVE);
+            tag.add(links);
+        }
         return tag;
     }
 
@@ -76,9 +86,13 @@ public class TagController {
     public RepresentationModel<TagDto> getTopTagOfUser(@PathVariable int id) {
         TagDto tag = tagService.findMostUsedOfUser(id);
         Link self = linkTo(methodOn(this.getClass()).getTopTagOfUser(id)).withSelfRel().withType(GET);
-        List<Link> links = buildLinks(this.getClass(), id, DELETE, SAVE);
         tag.add(self);
-        tag.add(links);
+
+        List<String> roles = SecurityUtils.getCurrentRoles();
+        if (roles.contains(ADMIN_ROLE)) {
+            List<Link> links = buildLinks(this.getClass(), id, DELETE, SAVE);
+            tag.add(links);
+        }
         return tag;
     }
 
@@ -87,7 +101,13 @@ public class TagController {
     public RepresentationModel<TagDto> getTopTagOfTopUser() {
         TagDto tag = tagService.findMostUsedOfTopUser();
         Link self = linkTo(methodOn(this.getClass()).getTopTagOfTopUser()).withSelfRel().withType(GET);
-        List<Link> links = buildLinks(this.getClass(), tag.getId(), FIND, DELETE, SAVE);
+        List<Link> links = buildLinks(this.getClass(), tag.getId(), FIND);
+
+        List<String> roles = SecurityUtils.getCurrentRoles();
+        if (roles.contains(ADMIN_ROLE)) {
+            List<Link> adminLinks = buildLinks(this.getClass(), tag.getId(), DELETE, SAVE);
+            links.addAll(adminLinks);
+        }
         tag.add(self);
         tag.add(links);
         return tag;

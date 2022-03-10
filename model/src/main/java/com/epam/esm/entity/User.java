@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.Collections;
 import java.util.Set;
 
 import static javax.persistence.CascadeType.MERGE;
@@ -35,5 +36,10 @@ public class User {
             joinColumns = {@JoinColumn(name = "user_id")},
             inverseJoinColumns = {@JoinColumn(name = "role_id")})
     private Set<Role> roles;
+
+    @PrePersist
+    private void prePersist(){
+        roles = Collections.singleton(new Role("USER"));
+    }
 
 }

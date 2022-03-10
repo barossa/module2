@@ -4,12 +4,12 @@ import com.epam.esm.dto.*;
 import com.epam.esm.exception.extend.OrderNotFoundException;
 import com.epam.esm.service.OrderService;
 import com.epam.esm.service.UserService;
+import com.epam.esm.util.SecurityUtils;
 import com.fasterxml.jackson.annotation.JsonView;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,14 +32,18 @@ public class OrderController {
 
     @GetMapping
     @JsonView(View.Base.class)
-    public CollectionModel<OrderDto> findAll(PageDto page, Authentication authentication) {
-        UserDto user = (UserDto) authentication.getPrincipal();
+    public CollectionModel<OrderDto> findAll(PageDto page) {
+        UserDto user = SecurityUtils.getCurrentUser();
         List<OrderDto> orders;
-        if(user.getRoles().contains(ADMIN_ROLE)){
+        if (user.getRoles().contains(ADMIN_ROLE)) {
             orders = orderService.findAll(page);
-        }else {
+        } else {
             orders = userService.findUserOrders(user.getId(), page);
         }
+        orders.forEach(order -> {
+            Link self = buildSelf(this.getClass(), order.getId(), FIND);
+            order.add(self);
+        });
         CollectionModel<OrderDto> collection = CollectionModel.of(orders);
         if (!orders.isEmpty()) {
             String pageQuery = pageQuery(page);
@@ -52,10 +56,10 @@ public class OrderController {
 
     @GetMapping("/{id:^[0-9]+$}")
     @JsonView(View.Base.class)
-    public RepresentationModel<OrderDto> findById(@PathVariable int id, Authentication authentication) {
+    public RepresentationModel<OrderDto> findById(@PathVariable int id) {
         OrderDto order = orderService.find(id);
-        UserDto user = (UserDto) authentication.getPrincipal();
-        if(order.getUser().getId() != user.getId() && !user.getRoles().contains(ADMIN_ROLE)){
+        UserDto user = SecurityUtils.getCurrentUser();
+        if (order.getUser().getId() != user.getId() && !user.getRoles().contains(ADMIN_ROLE)) {
             throw new OrderNotFoundException();
         }
         Link self = buildSelf(this.getClass(), FIND);
@@ -81,12 +85,12 @@ public class OrderController {
      */
     @PostMapping
     @JsonView(View.Base.class)
-    public RepresentationModel<OrderDto> makeOrder(@RequestBody OrderParams params, Authentication authentication) {
-        UserDto user = (UserDto) authentication.getPrincipal();
+    public RepresentationModel<OrderDto> makeOrder(@RequestBody OrderParams params) {
+        UserDto user = SecurityUtils.getCurrentUser();
         OrderDto order;
-        if(user.getRoles().contains(ADMIN_ROLE)){
+        if (user.getRoles().contains(ADMIN_ROLE)) {
             order = orderService.save(params.getCertificateId(), params.getUserId());
-        }else{
+        } else {
             order = orderService.save(params.getCertificateId(), user.getId());
         }
 

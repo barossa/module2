@@ -7,19 +7,17 @@ import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.epam.esm.dto.UserDto;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.authentication.jaas.JaasAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public final class JwtUtils {
 
-    private static final int ACCESS_TOKEN_LIVE_TIME = 10;
+    private static final String ACCESS_TOKEN_KEY = "access_token";
+    private static final String REFRESH_TOKEN_KEY = "refresh_token";
 
+    private static final int ACCESS_TOKEN_LIVE_TIME = 10;
     private static final int REFRESH_TOKEN_LIVE_TIME = 60;
 
     private static final String TOKEN_REGEX = "((?<=^Bearer )((?:\\.?(?:[A-Za-z0-9-_]+)){3}))$";
@@ -27,7 +25,6 @@ public final class JwtUtils {
     private static final String SECRET = "qwerty_";
 
     private static final String ROLES_KEY = "roles";
-
     private static final String USER_ID_KEY = "user_id";
 
     private static Pattern tokenPattern = Pattern.compile(TOKEN_REGEX);
@@ -66,6 +63,13 @@ public final class JwtUtils {
                 .withIssuer(issuer)
                 .withClaim(USER_ID_KEY, user.getId())
                 .sign(algorithm);
+    }
+
+    public static Map<String, String> buildTokens(UserDto user, String issuer) {
+        Map<String, String> tokens = new HashMap<>();
+        tokens.put(ACCESS_TOKEN_KEY, buildAccessToken(user, issuer));
+        tokens.put(REFRESH_TOKEN_KEY, buildRefreshToken(user, issuer));
+        return tokens;
     }
 
     public static JWTVerifier getVerifier() {

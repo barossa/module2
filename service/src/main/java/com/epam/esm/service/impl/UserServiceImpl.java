@@ -17,8 +17,6 @@ import com.epam.esm.validator.UserValidator;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -73,7 +70,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public UserDto save(UserDto userDto) {
         try {
-            List<String> errors = userValidator.validateName(userDto.getUsername());
+            List<String> errors = userValidator.validate(userDto);
             if (!errors.isEmpty()) {
                 throw new ObjectValidationException(errors);
             }
@@ -163,14 +160,14 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     @Transactional
     public UserDto loadUserByUsername(String username) throws UsernameNotFoundException {
-        try{
+        try {
             User user = userDao.findByName(username);
-            if(user == null){
+            if (user == null) {
                 throw new UsernameNotFoundException("User not presented");
             }
             return DtoMapper.mapUserFromData(user);
 
-        }catch (DaoException e){
+        } catch (DaoException e) {
             logger.error("Can't load user by name from db", e);
             throw new UsernameNotFoundException("Can't load user by name from db", e);
         }
