@@ -34,7 +34,7 @@ public class SecurityController {
             JWTVerifier verifier = JwtUtils.getVerifier();
             DecodedJWT decodedJWT = verifier.verify(refreshToken);
             UserDto user = (UserDto) userDetailsService.loadUserByUsername(decodedJWT.getSubject());
-            String accessToken = JwtUtils.buildAccessToken(user, refreshToken);
+            String accessToken = JwtUtils.buildAccessToken(user);
             return ResponseEntity.ok(Collections.singletonMap("access_token", accessToken));
 
         } catch (Exception e) {

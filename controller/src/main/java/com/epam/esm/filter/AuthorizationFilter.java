@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -43,8 +42,6 @@ public class AuthorizationFilter extends OncePerRequestFilter {
                     DecodedJWT decodedJWT = verifier.verify(token);
                     UsernamePasswordAuthenticationToken authenticationToken = JwtUtils.parseJwt(decodedJWT);
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-                    String roles = authenticationToken.getAuthorities().stream().map(GrantedAuthority::getAuthority).reduce("", (a, b) -> a + "," + b);
-                    log.info("Logged as {} with roles: {}", authenticationToken.getName(), roles);
 
                 } catch (Exception e) {
                     ErrorResponse errorResponse = errorBuilder.build(INVALID_TOKEN);

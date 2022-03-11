@@ -44,31 +44,29 @@ public final class JwtUtils {
         return token;
     }
 
-    public static String buildAccessToken(UserDto user, String issuer) {
+    public static String buildAccessToken(UserDto user) {
         Algorithm algorithm = Algorithm.HMAC256(SECRET.getBytes());
         return JWT.create()
                 .withSubject(user.getUsername())
                 .withExpiresAt(new Date(System.currentTimeMillis() + ACCESS_TOKEN_LIVE_TIME * 60 * 1000))
-                .withIssuer(issuer)
                 .withClaim(USER_ID_KEY, user.getId())
                 .withClaim(ROLES_KEY, new ArrayList<>(user.getRoles()))
                 .sign(algorithm);
     }
 
-    public static String buildRefreshToken(UserDto user, String issuer) {
+    public static String buildRefreshToken(UserDto user) {
         Algorithm algorithm = Algorithm.HMAC256(SECRET.getBytes());
         return JWT.create()
                 .withSubject(user.getUsername())
                 .withExpiresAt(new Date(System.currentTimeMillis() + REFRESH_TOKEN_LIVE_TIME * 60 * 1000))
-                .withIssuer(issuer)
                 .withClaim(USER_ID_KEY, user.getId())
                 .sign(algorithm);
     }
 
-    public static Map<String, String> buildTokens(UserDto user, String issuer) {
+    public static Map<String, String> buildTokens(UserDto user) {
         Map<String, String> tokens = new HashMap<>();
-        tokens.put(ACCESS_TOKEN_KEY, buildAccessToken(user, issuer));
-        tokens.put(REFRESH_TOKEN_KEY, buildRefreshToken(user, issuer));
+        tokens.put(ACCESS_TOKEN_KEY, buildAccessToken(user));
+        tokens.put(REFRESH_TOKEN_KEY, buildRefreshToken(user));
         return tokens;
     }
 

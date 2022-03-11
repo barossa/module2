@@ -36,8 +36,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException {
         SecurityContextHolder.getContext().setAuthentication(authResult);
         UserDto user = (UserDto) authResult.getPrincipal();
-        String issuer = request.getRequestURL().toString();
-        Map<String, String> tokens = JwtUtils.buildTokens(user, issuer);
+        Map<String, String> tokens = JwtUtils.buildTokens(user);
         response.setHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE);
         new ObjectMapper().writeValue(response.getOutputStream(), tokens);
     }
