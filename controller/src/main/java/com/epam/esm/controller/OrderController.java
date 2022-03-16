@@ -1,10 +1,11 @@
 package com.epam.esm.controller;
 
-import com.epam.esm.dto.OrderDto;
-import com.epam.esm.dto.OrderParams;
-import com.epam.esm.dto.PageDto;
-import com.epam.esm.dto.View;
+import com.epam.esm.dto.*;
+import com.epam.esm.exception.extend.OrderNotFoundException;
+import com.epam.esm.link.LinkBuilder;
 import com.epam.esm.service.OrderService;
+import com.epam.esm.service.UserService;
+import com.epam.esm.util.SecurityUtils;
 import com.fasterxml.jackson.annotation.JsonView;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.CollectionModel;
@@ -14,12 +15,13 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static com.epam.esm.dto.UserRoles.ADMIN_ROLE;
 import static com.epam.esm.link.HttpMethod.GET;
-import static com.epam.esm.link.LinkBuilder.RelType.DELETE;
-import static com.epam.esm.link.LinkBuilder.RelType.FIND;
-import static com.epam.esm.link.LinkBuilder.*;
+import static com.epam.esm.link.LinkUtils.RelType.DELETE;
+import static com.epam.esm.link.LinkUtils.RelType.FIND;
+import static com.epam.esm.link.LinkUtils.*;
+import static com.epam.esm.util.EntityUtils.UNDEFINED_ID;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 
 @RestController
@@ -27,27 +29,41 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequiredArgsConstructor
 public class OrderController {
     private final OrderService orderService;
+    private final UserService userService;
+    private final LinkBuilder<OrderDto> linkBuilder;
 
     @GetMapping
     @JsonView(View.Base.class)
     public CollectionModel<OrderDto> findAll(PageDto page) {
-        List<OrderDto> orders = orderService.findAll(page);
-        CollectionModel<OrderDto> collection = CollectionModel.of(orders);
-        if (!orders.isEmpty()) {
-            String pageQuery = pageQuery(page);
-            String query = prepareQuery(pageQuery);
-            Link self = linkTo(this.getClass()).slash(query).withSelfRel().withType(GET);
-            collection.add(self);
+        UserDto user = SecurityUtils.getCurrentUser();
+        List<OrderDto> orders;
+        if (user.getRoles().contains(ADMIN_ROLE)) {
+            orders = orderService.findAll(page);
+        } else {
+            orders = userService.findUserOrders(user.getId(), page);
         }
-        return collection;
+        orders.forEach(order -> {
+            Link self = buildSelf(this.getClass(), order.getId(), FIND);
+            linkBuilder.attachLinks(order, self);
+        });
+
+        String pageQuery = pageQuery(page);
+        String query = prepareQuery(pageQuery);
+        Link self = linkTo(this.getClass()).slash(query).withSelfRel().withType(GET);
+
+        return attachToCollection(orders, self);
     }
 
     @GetMapping("/{id:^[0-9]+$}")
     @JsonView(View.Base.class)
     public RepresentationModel<OrderDto> findById(@PathVariable int id) {
         OrderDto order = orderService.find(id);
+        UserDto user = SecurityUtils.getCurrentUser();
+        if (order.getUser().getId() != user.getId() && !user.getRoles().contains(ADMIN_ROLE)) {
+            throw new OrderNotFoundException();
+        }
         Link self = buildSelf(this.getClass(), FIND);
-        order.add(self);
+        linkBuilder.attachLinks(order, self);
         return order;
     }
 
@@ -56,7 +72,7 @@ public class OrderController {
     public RepresentationModel<OrderDto> deleteById(@PathVariable int id) {
         OrderDto order = orderService.delete(id);
         Link self = buildSelf(this.getClass(), id, DELETE);
-        order.add(self);
+        linkBuilder.attachLinks(order, self);
         return order;
     }
 
@@ -70,19 +86,20 @@ public class OrderController {
     @PostMapping
     @JsonView(View.Base.class)
     public RepresentationModel<OrderDto> makeOrder(@RequestBody OrderParams params) {
+        UserDto user = SecurityUtils.getCurrentUser();
+        OrderDto order;
+        if (user.getRoles().contains(ADMIN_ROLE)) {
+            if (params.getUserId() == UNDEFINED_ID) {
+                params.setUserId(user.getId());
+            }
+            order = orderService.save(params.getCertificateId(), params.getUserId());
+        } else {
+            order = orderService.save(params.getCertificateId(), user.getId());
+        }
 
-        OrderDto orderDto = orderService.save(params.getCertificateId(), params.getUserId());
         Link self = linkTo(this.getClass()).withSelfRel().withType(GET);
-        Link userOrders = linkTo(methodOn(UserController.class).findUserOrders(orderDto.getUser().getId(), new PageDto()))
-                .withRel("userOrders").withType(GET);
-        List<Link> links = buildLinks(this.getClass(), orderDto.getId(), FIND);
-        Link topTag = linkTo(methodOn(TagController.class).getTopTagOfUser(orderDto.getUser().getId()))
-                .withRel("topTag").withType(GET);
-        orderDto.add(self);
-        orderDto.add(userOrders);
-        orderDto.add(links);
-        orderDto.add(topTag);
-        return orderDto;
+        linkBuilder.attachLinks(order, self);
+        return order;
     }
 
 }

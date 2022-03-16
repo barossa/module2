@@ -73,13 +73,11 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public User findByName(String name, Page page) throws DaoException {
+    public User findByName(String name) throws DaoException {
         try {
             TypedQuery<User> query = entityManager.createQuery(FIND_USER_BY_NAME_JQL, User.class);
             query.setParameter("name", name);
-            query.setFirstResult(page.getOffset());
-            query.setMaxResults(page.getLimit());
-            return query.getSingleResult();
+            return query.getResultList().stream().findFirst().orElse(null);
         } catch (Exception e) {
             throw new DaoException("Can't find user by name", e);
         }

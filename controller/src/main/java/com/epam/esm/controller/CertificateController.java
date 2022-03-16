@@ -3,7 +3,10 @@ package com.epam.esm.controller;
 import com.epam.esm.dto.CertificateDto;
 import com.epam.esm.dto.CertificateFilterDto;
 import com.epam.esm.dto.PageDto;
+import com.epam.esm.dto.View;
+import com.epam.esm.link.LinkBuilder;
 import com.epam.esm.service.CertificateService;
+import com.fasterxml.jackson.annotation.JsonView;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
@@ -14,8 +17,8 @@ import java.util.List;
 import java.util.Set;
 
 import static com.epam.esm.link.HttpMethod.GET;
-import static com.epam.esm.link.LinkBuilder.*;
-import static com.epam.esm.link.LinkBuilder.RelType.*;
+import static com.epam.esm.link.LinkUtils.RelType.*;
+import static com.epam.esm.link.LinkUtils.*;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 
@@ -27,6 +30,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 @RequiredArgsConstructor
 public class CertificateController {
     private final CertificateService certificateService;
+    private final LinkBuilder<CertificateDto> linkBuilder;
 
     /**
      * Search certificates by filter params.
@@ -39,25 +43,18 @@ public class CertificateController {
      * @return the certificate objects
      */
     @GetMapping
+    @JsonView(View.Base.class)
     public CollectionModel<CertificateDto> searchByOptions(CertificateFilterDto filter,
                                                            @RequestParam(name = "sort", required = false) Set<String> sorts,
                                                            PageDto page) {
         List<CertificateDto> certificates = certificateService.findByFilter(filter, page, sorts);
         for (CertificateDto certificate : certificates) {
-            List<Link> links = buildLinks(this.getClass(), certificate.getId(), UPDATE, DELETE);
             Link self = buildSelf(this.getClass(), certificate.getId(), FIND);
-            certificate.add(self);
-            certificate.add(links);
+            linkBuilder.attachLinks(certificate, self);
         }
-        CollectionModel<CertificateDto> collection = CollectionModel.of(certificates);
-        if (!certificates.isEmpty()) {
-            String pageQuery = pageQuery(page);
-            String filterQuery = filterQuery(filter);
-            String query = prepareQuery(pageQuery, filterQuery);
-            Link self = linkTo(this.getClass()).slash(query).withSelfRel().withType(GET);
-            collection.add(self);
-        }
-        return collection;
+        String query = prepareQuery(pageQuery(page), filterQuery(filter));
+        Link self = linkTo(this.getClass()).slash(query).withSelfRel().withType(GET);
+        return attachToCollection(certificates, self);
     }
 
     /**
@@ -67,13 +64,11 @@ public class CertificateController {
      * @return the certificate object
      */
     @GetMapping(value = "/{id:^[0-9]+$}")
+    @JsonView(View.Base.class)
     public RepresentationModel<CertificateDto> getCertificate(@PathVariable int id) {
         CertificateDto certificate = certificateService.find(id);
-        List<Link> links = buildLinks(CertificateController.class, id, FIND_ALL, UPDATE, DELETE, SAVE);
         Link self = buildSelf(CertificateController.class, id, FIND);
-        certificate.add(self);
-        certificate.add(links);
-
+        linkBuilder.attachLinks(certificate, self);
         return certificate;
     }
 
@@ -89,13 +84,11 @@ public class CertificateController {
      * @return the added certificate object
      */
     @PostMapping
+    @JsonView(View.Base.class)
     public RepresentationModel<CertificateDto> addCertificate(@RequestBody CertificateDto certificate) {
         CertificateDto savedCertificate = certificateService.save(certificate);
-        List<Link> links = buildLinks(this.getClass(), savedCertificate.getId(), FIND, UPDATE, DELETE, FIND_ALL);
         Link self = buildSelf(this.getClass(), SAVE);
-        savedCertificate.add(self);
-        savedCertificate.add(links);
-
+        linkBuilder.attachLinks(certificate, self);
         return savedCertificate;
     }
 
@@ -107,13 +100,12 @@ public class CertificateController {
      * @return the patched certificate object
      */
     @PatchMapping(value = "/{id:^[0-9]+$}")
+    @JsonView(View.Base.class)
     public RepresentationModel<CertificateDto> modifyCertificate(@RequestBody CertificateDto certificate, @PathVariable int id) {
         certificate.setId(id);
         CertificateDto updatedCertificate = certificateService.update(certificate);
-        List<Link> links = buildLinks(this.getClass(), certificate.getId(), FIND, DELETE, SAVE);
         Link self = buildSelf(this.getClass(), UPDATE);
-        updatedCertificate.add(self);
-        updatedCertificate.add(links);
+        linkBuilder.attachLinks(certificate, self);
         return updatedCertificate;
     }
 
@@ -124,12 +116,11 @@ public class CertificateController {
      * @return the delete response
      */
     @DeleteMapping("/{id:^[0-9]+$}")
+    @JsonView(View.Base.class)
     public RepresentationModel<CertificateDto> deleteCertificate(@PathVariable int id) {
         CertificateDto certificate = certificateService.delete(id);
-        List<Link> links = buildLinks(this.getClass(), FIND_ALL, SAVE);
         Link self = buildSelf(this.getClass(), id, DELETE);
-        certificate.add(self);
-        certificate.add(links);
+        linkBuilder.attachLinks(certificate, self);
         return certificate;
     }
 }
