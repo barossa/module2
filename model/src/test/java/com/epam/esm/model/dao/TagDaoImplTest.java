@@ -13,6 +13,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -25,19 +26,19 @@ import static com.epam.esm.util.EntityUtils.UNDEFINED_ID;
 @Sql(scripts = "classpath:sql/db.sql")
 @ExtendWith(SpringExtension.class)
 @EnableAutoConfiguration
-public class TagDaoImplTest {
+class TagDaoImplTest {
 
     @Autowired
     private TagDao tagDao;
 
     @Test
-    public void findTest() throws DaoException {
+    void findTest() throws DaoException {
         Tag tagData = tagDao.find(58);
         Assertions.assertNotNull(tagData);
     }
 
     @Test
-    public void saveTest() throws DaoException {
+    void saveTest() throws DaoException {
         Tag tagData = new Tag();
         tagData.setName("TagName");
         tagData.setCertificates(Collections.emptySet());
@@ -46,25 +47,25 @@ public class TagDaoImplTest {
     }
 
     @Test
-    public void deleteTest() throws DaoException {
+    void deleteTest() throws DaoException {
         int affectedObjects = tagDao.delete(58);
         Assertions.assertNotEquals(0, affectedObjects);
     }
 
     @Test
-    public void findAllTest() throws DaoException {
+    void findAllTest() throws DaoException {
         List<Tag> tagsData = tagDao.findAll(new Page());
         Assertions.assertFalse(tagsData.isEmpty());
     }
 
     @Test
-    public void findByNameTest() throws DaoException {
+    void findByNameTest() throws DaoException {
         Tag actualTag = tagDao.findByName("inserted-tag");
         Assertions.assertNotNull(actualTag);
     }
 
     @Test
-    public void saveAllTest() throws DaoException {
+    void saveAllTest() throws DaoException {
         Set<Tag> tagData = new HashSet<>();
         tagData.add(new Tag(UNDEFINED_ID, "first-tag", Collections.emptySet()));
         tagData.add(new Tag(UNDEFINED_ID, "second-tag", Collections.emptySet()));

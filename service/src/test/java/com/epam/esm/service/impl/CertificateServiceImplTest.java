@@ -20,7 +20,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class CertificateServiceImplTest {
+class CertificateServiceImplTest {
     private CertificateDto certificateDto;
     private List<CertificateDto> certificateDtos;
     private CertificateFilterDto filter;
@@ -39,42 +39,42 @@ public class CertificateServiceImplTest {
     }
 
     @Test
-    public void findTest() {
+    void findTest() {
         when(certificateService.find(anyInt())).thenReturn(certificateDto);
         CertificateDto actualCertificate = certificateService.find(1);
         Assertions.assertEquals(certificateDto, actualCertificate);
     }
 
     @Test
-    public void findAllTest() {
+    void findAllTest() {
         when(certificateService.findAll(any(PageDto.class))).thenReturn(certificateDtos);
         List<CertificateDto> actualCertificates = certificateService.findAll(new PageDto());
         Assertions.assertEquals(certificateDtos, actualCertificates);
     }
 
     @Test
-    public void saveTest() {
+    void saveTest() {
         when(certificateService.save(any(CertificateDto.class))).thenReturn(certificateDto);
         CertificateDto savedCertificate = certificateService.save(certificateDto);
         Assertions.assertEquals(certificateDto, savedCertificate);
     }
 
     @Test
-    public void deleteTest() {
+    void deleteTest() {
         when(certificateService.delete(anyInt())).thenReturn(certificateDto);
         CertificateDto actualCertificate = certificateService.delete(1);
-        Assertions.assertNotEquals(actualCertificate.getId(), 0);
+        Assertions.assertNotEquals(0, actualCertificate.getId());
     }
 
     @Test
-    public void updateTest() {
+    void updateTest() {
         when(certificateService.update(certificateDto)).thenReturn(certificateDto);
         CertificateDto updated = certificateService.update(certificateDto);
         Assertions.assertEquals(certificateDto, updated);
     }
 
     @Test
-    public void findByFilterTest() {
+    void findByFilterTest() {
         when(certificateService.findByFilter(any(CertificateFilterDto.class), any(PageDto.class), any(Set.class))).thenReturn(certificateDtos);
         Set<String> sorts = new HashSet<>();
         List<CertificateDto> actualCertificates = certificateService.findByFilter(filter, new PageDto(), sorts);

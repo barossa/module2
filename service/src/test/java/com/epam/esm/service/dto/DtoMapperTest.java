@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collections;
 
-public class DtoMapperTest {
+class DtoMapperTest {
     private Certificate certificateData;
     private CertificateDto certificateDto;
     private Tag tagData;
@@ -29,25 +29,25 @@ public class DtoMapperTest {
     }
 
     @Test
-    public void mapCertificateFromDataTest() {
+    void mapCertificateFromDataTest() {
         CertificateDto actualDto = DtoMapper.mapCertificateFromData(certificateData);
         Assertions.assertEquals(certificateDto, actualDto);
     }
 
     @Test
-    public void mapCertificateToDataTest() {
+    void mapCertificateToDataTest() {
         Certificate actualData = DtoMapper.mapCertificateToData(certificateDto);
         Assertions.assertEquals(certificateData, actualData);
     }
 
     @Test
-    public void mapTagFromDataTest() {
+    void mapTagFromDataTest() {
         TagDto actualDto = DtoMapper.mapTagFromData(tagData);
         Assertions.assertEquals(tagDto, actualDto);
     }
 
     @Test
-    public void mapTagToDataTest() {
+    void mapTagToDataTest() {
         Tag actualData = DtoMapper.mapTagToData(tagDto);
         Assertions.assertEquals(tagData, actualData);
     }

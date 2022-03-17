@@ -117,10 +117,9 @@ public class CertificateValidatorImpl implements CertificateValidator {
                     b.addAll(a);
                     return b;
                 });
-        List<String> errors = Stream.of(nameErrors, descriptionErrors, priceErrors, durationErrors, tagErrors)
+        return Stream.of(nameErrors, descriptionErrors, priceErrors, durationErrors, tagErrors)
                 .flatMap(Collection::stream)
                 .distinct()
                 .collect(Collectors.toList());
-        return errors;
     }
 }

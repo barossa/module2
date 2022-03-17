@@ -27,10 +27,9 @@ public final class JwtUtils {
     private static final String ROLES_KEY = "roles";
     private static final String USER_ID_KEY = "user_id";
 
-    private static Pattern tokenPattern = Pattern.compile(TOKEN_REGEX);
+    private static final Pattern tokenPattern = Pattern.compile(TOKEN_REGEX);
 
     private JwtUtils() {
-        tokenPattern = Pattern.compile(TOKEN_REGEX);
     }
 
     public static String matchToken(String header) {

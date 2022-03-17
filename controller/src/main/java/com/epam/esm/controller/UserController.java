@@ -133,6 +133,6 @@ public class UserController {
         UserDto savedUser = userService.save(user);
         Map<String, String> tokens = JwtUtils.buildTokens(savedUser);
         Link self = buildSelf(this.getClass(), SAVE);
-        return CollectionModel.of(tokens).add(self);
+        return RepresentationModel.of(tokens).add(self);
     }
 }

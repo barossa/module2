@@ -26,19 +26,19 @@ import static com.epam.esm.util.EntityUtils.UNDEFINED_ID;
 @Sql(scripts = "classpath:sql/db.sql")
 @ExtendWith(SpringExtension.class)
 @EnableAutoConfiguration
-public class CertificateDaoImplTest {
+class CertificateDaoImplTest {
 
     @Autowired
     private CertificateDao certificateDao;
 
     @Test
-    public void findTest() throws DaoException {
+    void findTest() throws DaoException {
         Certificate certificate = certificateDao.find(15);
         Assertions.assertNotNull(certificate);
     }
 
     @Test
-    public void saveTest() throws DaoException {
+    void saveTest() throws DaoException {
         Certificate certificate = new Certificate(UNDEFINED_ID, "Certificate", "Description", new BigDecimal(100), 7L,
                 LocalDateTime.now(), LocalDateTime.now(), Collections.emptySet());
         Certificate actual = certificateDao.save(certificate);
@@ -46,19 +46,19 @@ public class CertificateDaoImplTest {
     }
 
     @Test
-    public void deleteTest() throws DaoException {
+    void deleteTest() throws DaoException {
         int affectedObjects = certificateDao.delete(15);
         Assertions.assertNotEquals(0, affectedObjects);
     }
 
     @Test
-    public void findAllTest() throws DaoException {
+    void findAllTest() throws DaoException {
         List<Certificate> actual = certificateDao.findAll(new Page());
         Assertions.assertFalse(actual.isEmpty());
     }
 
     @Test
-    public void updateTest() throws DaoException {
+    void updateTest() throws DaoException {
         Certificate certificate = certificateDao.find(16);
         certificate.setName("New name of certificate");
         Certificate updated = certificateDao.update(certificate);
@@ -66,7 +66,7 @@ public class CertificateDaoImplTest {
     }
 
     @Test
-    public void findByOptions() throws DaoException {
+    void findByOptions() throws DaoException {
         Tag tag = new Tag(49, "another-tag", Collections.emptySet());
         List<Tag> tags = Collections.singletonList(tag);
         CertificateFilter filter = new CertificateFilter(tags, Collections.emptyList(), Collections.emptyList());

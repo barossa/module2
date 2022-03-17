@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class CertificateValidatorImplTest {
+class CertificateValidatorImplTest {
 
     private CertificateValidator certificateValidator;
 
@@ -27,70 +27,70 @@ public class CertificateValidatorImplTest {
 
     @ParameterizedTest
     @MethodSource("incorrectNames")
-    public void invalidNameTest(String name) {
+    void invalidNameTest(String name) {
         List<String> errors = certificateValidator.validateName(name);
         Assertions.assertFalse(errors.isEmpty());
     }
 
     @ParameterizedTest
     @MethodSource("correctNames")
-    public void validNameTest(String name) {
+    void validNameTest(String name) {
         List<String> errors = certificateValidator.validateName(name);
         Assertions.assertTrue(errors.isEmpty());
     }
 
     @ParameterizedTest
     @MethodSource("incorrectDescriptions")
-    public void invalidDescriptionTest(String description) {
+    void invalidDescriptionTest(String description) {
         List<String> errors = certificateValidator.validateDescription(description);
         Assertions.assertFalse(errors.isEmpty());
     }
 
     @ParameterizedTest
     @MethodSource("correctDescriptions")
-    public void validDescriptionTest(String description) {
+    void validDescriptionTest(String description) {
         List<String> errors = certificateValidator.validateDescription(description);
         Assertions.assertTrue(errors.isEmpty());
     }
 
     @ParameterizedTest
     @MethodSource("incorrectPrices")
-    public void invalidPriceTest(BigDecimal price) {
+    void invalidPriceTest(BigDecimal price) {
         List<String> errors = certificateValidator.validatePrice(price);
         Assertions.assertFalse(errors.isEmpty());
     }
 
     @ParameterizedTest
     @MethodSource("correctPrices")
-    public void validPriceTest(BigDecimal price) {
+    void validPriceTest(BigDecimal price) {
         List<String> errors = certificateValidator.validatePrice(price);
         Assertions.assertTrue(errors.isEmpty());
     }
 
     @ParameterizedTest
     @MethodSource("incorrectDurations")
-    public void invalidDurationTest(long duration) {
+    void invalidDurationTest(long duration) {
         List<String> errors = certificateValidator.validateDuration(duration);
         Assertions.assertFalse(errors.isEmpty());
     }
 
     @ParameterizedTest
     @MethodSource("correctDurations")
-    public void validDurationTest(long duration) {
+    void validDurationTest(long duration) {
         List<String> errors = certificateValidator.validateDuration(duration);
         Assertions.assertTrue(errors.isEmpty());
     }
 
     @ParameterizedTest
     @MethodSource("incorrectTags")
-    public void invalidTagTest(String tagName) {
+    void invalidTagTest(String tagName) {
         List<String> errors = certificateValidator.validateTagName(tagName);
         Assertions.assertFalse(errors.isEmpty());
     }
 
     @ParameterizedTest
     @MethodSource("correctTags")
-    public void validTagTest(String tagName) {
+    void validTagTest(String tagName) {
         List<String> errors = certificateValidator.validateTagName(tagName);
         Assertions.assertTrue(errors.isEmpty());
     }
