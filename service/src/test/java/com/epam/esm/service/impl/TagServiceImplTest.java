@@ -1,4 +1,4 @@
-package com.epam.esm.service.impl;
+package com.epam.esm.impl;
 
 import com.epam.esm.dto.PageDto;
 import com.epam.esm.dto.TagDto;
