@@ -1,4 +1,4 @@
-package com.epam.esm.service.validator.impl;
+package com.epam.esm.impl;
 
 import com.epam.esm.validator.CertificateValidator;
 import com.epam.esm.validator.ErrorMessageProvider;

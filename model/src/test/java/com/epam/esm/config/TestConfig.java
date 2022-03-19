@@ -1,22 +1,20 @@
-package com.epam.esm.model.config;
+package com.epam.esm.config;
 
 import com.epam.esm.dao.CertificateDao;
 import com.epam.esm.dao.TagDao;
 import com.epam.esm.dao.impl.CertificateDaoImpl;
 import com.epam.esm.dao.impl.TagDaoImpl;
-import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import javax.persistence.EntityManager;
 import javax.sql.DataSource;
 
-@Configuration
-@RequiredArgsConstructor
-@EntityScan(basePackages = "com.epam.esm.model.dto")
+@TestConfiguration
+@EntityScan(basePackages = "com.epam.esm.entity")
 @PropertySource("classpath:test.properties")
 public class TestConfig {
     private static final String DATASOURCE_URL = "jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL";
@@ -33,7 +31,6 @@ public class TestConfig {
         dataSource.setPassword(DATASOURCE_PASSWORD);
         return dataSource;
     }
-
 
     @Bean
     public TagDao tagDao(EntityManager manager) {

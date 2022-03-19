@@ -1,8 +1,7 @@
-package com.epam.esm.model.dao;
+package com.epam.esm.dao;
 
-import com.epam.esm.dao.CertificateDao;
+import com.epam.esm.config.TestConfig;
 import com.epam.esm.entity.*;
-import com.epam.esm.model.config.TestConfig;
 import com.epam.esm.exception.DaoException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
