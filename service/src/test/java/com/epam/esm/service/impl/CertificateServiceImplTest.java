@@ -3,6 +3,7 @@ package com.epam.esm.service.impl;
 import com.epam.esm.dto.CertificateDto;
 import com.epam.esm.dto.CertificateFilterDto;
 import com.epam.esm.dto.PageDto;
+import com.epam.esm.service.impl.CertificateServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

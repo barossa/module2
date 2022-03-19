@@ -1,4 +1,4 @@
-package com.epam.esm.service.dto;
+package com.epam.esm.dto;
 
 import com.epam.esm.entity.Certificate;
 import com.epam.esm.entity.Tag;
