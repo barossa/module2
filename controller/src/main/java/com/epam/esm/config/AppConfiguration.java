@@ -19,8 +19,9 @@ import java.util.Locale;
 public class AppConfiguration {
     private static final String MESSAGES_BUNDLE_NAME = "lang/messages";
     private static final String MESSAGES_ENCODING = "UTF-8";
-
-    private static final Locale DEFAULT_LOCALE = Locale.US;
+    private static final String DEFAULT_LANG_KEY = "en";
+    private static final String DEFAULT_COUNTRY_KEY = "US";
+    private static final Locale DEFAULT_LOCALE = new Locale(DEFAULT_LANG_KEY, DEFAULT_COUNTRY_KEY);
 
     @Bean
     public JdbcTemplate jdbcTemplate(DataSource dataSource) {
@@ -32,6 +33,7 @@ public class AppConfiguration {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
         messageSource.setBasenames(MESSAGES_BUNDLE_NAME);
         messageSource.setDefaultEncoding(MESSAGES_ENCODING);
+        messageSource.setDefaultLocale(DEFAULT_LOCALE);
         return messageSource;
     }
 
